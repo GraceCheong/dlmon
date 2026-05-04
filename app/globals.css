@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Pastel & Cute Aesthetic Palette */
+  --primary: #98D8AA; /* Soft Mint */
+  --primary-hover: #7BC691;
+  --primary-light: #F0F9F4;
+  
+  --secondary: #A7C7E7; /* Soft Sky Blue */
+  --secondary-hover: #8DBAE8;
+  
+  --accent: #FFD1DC; /* Soft Pink */
+  --accent-light: #FFF0F3;
+  
+  --background: #FDFDFD;
+  --foreground: #5E6C84;
+  
+  --card-bg: #ffffff;
+  --card-border: #F1F5F9;
+  --card-shadow: 0 12px 30px -10px rgba(152, 216, 170, 0.12);
+  --card-shadow-hover: 0 20px 40px -15px rgba(152, 216, 170, 0.2);
+  
+  --input-bg: #ffffff;
+  --input-border: #E2E8F0;
+  --input-focus: #98D8AA;
+  
+  --sidebar-bg: #FFFFFF;
+  --sidebar-fg: #5E6C84;
+  --sidebar-active: #F0F9F4;
+  --sidebar-active-text: #7BC691;
+  
+  --success: #A8E6CF;
+  --error: #FFD3B6;
+  --warning: #FFF9C4;
+  
+  /* Spacing & Roundness */
+  --space-unit: 1rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
+  
+  /* Typography */
+  --font-main: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Pastel themes usually look best in light mode, but providing soft dark offsets */
+  :root {
+    --background: #1A202C;
+    --foreground: #E2E8F0;
+    --card-bg: #2D3748;
+    --card-border: #4A5568;
+    --sidebar-bg: #2D3748;
+    --sidebar-fg: #E2E8F0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-main);
+  color: var(--foreground);
+  background: var(--background);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: #4A5568;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-main);
+  border: none;
+  background: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Rounded UI Components */
+.card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--primary-light);
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-xl);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(152, 216, 170, 0.3);
+}
+
+.btn-secondary {
+  background: var(--accent-light);
+  color: #D64545; /* Soft contrast for Peach/Pink */
+}
+
+.btn-secondary:hover {
+  background: var(--accent);
+  transform: scale(1.05);
+}
+
+.input {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: #F8FAFC;
+  border: 2px solid var(--input-border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(152, 216, 170, 0.15);
+}
+
+/* Layout Helpers */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-cols-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+

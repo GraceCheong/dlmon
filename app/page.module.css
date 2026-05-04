@@ -1,0 +1,150 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+.nav {
+  position: sticky;
+  top: 1rem;
+  z-index: 1000;
+  margin: 0 1rem;
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 2px solid white;
+  box-shadow: 0 8px 32px rgba(152, 216, 170, 0.1);
+}
+
+.hero {
+  padding: 10rem 0 8rem;
+  background: radial-gradient(circle at 80% 20%, var(--primary-light), transparent 40%),
+              radial-gradient(circle at 10% 80%, var(--accent-light), transparent 40%);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroContent {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: 4.5rem;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+  color: #4A5568;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  animation: float 6s ease-in-out infinite;
+}
+
+.hero p {
+  font-size: 1.35rem;
+  color: #718096;
+  margin-bottom: 3rem;
+  max-width: 650px;
+  line-height: 1.8;
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.heroActions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.heroImageWrapper {
+  margin-top: 5rem;
+  width: 100%;
+  max-width: 1100px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 40px 100px -20px rgba(152, 216, 170, 0.3);
+  animation: fadeInUp 1.2s ease-out 0.6s both;
+  border: 12px solid white;
+}
+
+.heroImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.features {
+  padding: 8rem 0;
+}
+
+.sectionTitle {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.sectionTitle h2 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: #4A5568;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+}
+
+.featureCard {
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  text-align: center;
+  align-items: center;
+}
+
+.featureIcon {
+  width: 4.5rem;
+  height: 4.5rem;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.featureCard h3 {
+  font-size: 1.5rem;
+}
+
+.featureCard p {
+  color: #718096;
+  line-height: 1.7;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.75rem; }
+  .hero { padding: 6rem 1.5rem 4rem; }
+  .hero p { font-size: 1.1rem; }
+}
+

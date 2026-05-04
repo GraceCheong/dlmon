@@ -1,0 +1,2 @@
+@AGENTS.md
+When you finish any work under the "I:\dev\dlmon", wirte and update the "Project Summary.md" file to check up the work you did for the project. wirte the log like an github commit commnets and with it s date and time. 
