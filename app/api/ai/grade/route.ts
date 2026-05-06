@@ -3,6 +3,23 @@ import prisma from '@/lib/prisma';
 import { generateText } from 'ai';
 import { aiClient, defaultModel } from '@/lib/ai/client';
 
+/**
+ * @deprecated since Phase 3 (2026-05-01).
+ *
+ * This route does single-shot grading without a versioned rubric, without
+ * ownership checks, and without language validation. The current student
+ * portal (`app/student/...`) still posts here, so it must remain wired up
+ * for now per spec §5 ("do not remove if the current student portal depends
+ * on it").
+ *
+ * Teacher-side grading must NOT use this. Use instead:
+ *   POST /api/ai/writing-rubrics/generate     — set up a rubric
+ *   POST /api/writing-submissions             — record student writing
+ *   POST /api/ai/writing-evaluations/evaluate — grade against the rubric
+ *   POST /api/writing-evaluations/:id/reevaluate — re-grade (versioned)
+ *
+ * Remove this entire file once the student portal flow is migrated.
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();

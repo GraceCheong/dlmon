@@ -1,0 +1,96 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e21]
+  - generic [ref=e50]:
+    - complementary [ref=e51]:
+      - generic [ref=e52]:
+        - generic [ref=e54]: 課
+        - generic [ref=e55]:
+          - generic [ref=e56]: 課意studio
+          - text: KeYi Studio
+      - navigation [ref=e57]:
+        - link "대시보드" [ref=e58] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e60]
+          - generic [ref=e65]: 대시보드
+        - link "내 강의실" [ref=e66] [cursor=pointer]:
+          - /url: /courses
+          - img [ref=e68]
+          - generic [ref=e70]: 내 강의실
+        - link "수강생 관리" [ref=e71] [cursor=pointer]:
+          - /url: /members
+          - img [ref=e73]
+          - generic [ref=e78]: 수강생 관리
+        - link "과제 및 평가" [ref=e79] [cursor=pointer]:
+          - /url: /assignments
+          - img [ref=e81]
+          - generic [ref=e84]: 과제 및 평가
+        - link "강의 계획서" [ref=e85] [cursor=pointer]:
+          - /url: /syllabi
+          - img [ref=e87]
+          - generic [ref=e90]: 강의 계획서
+        - generic [ref=e91]: 수업 자료 제작
+        - link "새 강좌 만들기" [ref=e92] [cursor=pointer]:
+          - /url: /courses/new
+          - img [ref=e93]
+          - text: 새 강좌 만들기
+        - link "YouTube AI 교재" [ref=e95] [cursor=pointer]:
+          - /url: /materials/import/youtube
+          - img [ref=e97]
+          - generic [ref=e101]: YouTube AI 교재
+      - generic [ref=e102]:
+        - generic [ref=e104]:
+          - button "한국어" [ref=e105] [cursor=pointer]
+          - button "English" [ref=e106] [cursor=pointer]
+        - link "계정 설정" [ref=e107] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e109]
+          - generic [ref=e112]: 계정 설정
+        - button "로그아웃" [ref=e113] [cursor=pointer]:
+          - img [ref=e114]
+          - generic [ref=e117]: 로그아웃
+    - main [ref=e118]:
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - heading "수업 관리" [level=1] [ref=e121]
+          - paragraph [ref=e122]: 선생님의 소중한 수업 자료와 강좌를 확인해 보세요.
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125]: test
+            - generic [ref=e126]: 정회원 계정
+          - generic [ref=e127]: TE
+      - generic [ref=e128]:
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - img [ref=e133]
+              - generic [ref=e135]: +1 this month
+            - generic [ref=e136]:
+              - generic [ref=e137]: 보유 강좌
+              - generic [ref=e138]: "0"
+          - generic [ref=e139]:
+            - generic [ref=e140]:
+              - img [ref=e142]
+              - generic [ref=e145]: +3 last week
+            - generic [ref=e146]:
+              - generic [ref=e147]: 배포된 수업
+              - generic [ref=e148]: "0"
+          - generic [ref=e149]:
+            - generic [ref=e150]:
+              - img [ref=e152]
+              - generic [ref=e157]: +12% from last month
+            - generic [ref=e158]:
+              - generic [ref=e159]: 총 조회수
+              - generic [ref=e160]: "0"
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - heading "최근 수정한 강좌" [level=2] [ref=e163]
+            - link "전체 강좌 보기" [ref=e164] [cursor=pointer]:
+              - /url: /courses
+              - text: 전체 강좌 보기
+              - img [ref=e165]
+          - link "새 강좌 만들기" [ref=e168] [cursor=pointer]:
+            - /url: /courses/new
+            - img [ref=e170]
+            - generic [ref=e171]: 새 강좌 만들기

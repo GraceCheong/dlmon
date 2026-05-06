@@ -5,6 +5,9 @@ export async function POST(request: Request) {
   try {
     const { lessonTitle, topic, objectives, courseLevel, language = 'ko' } = await request.json();
 
+    // Phase 3 cleanup: removed `tone-practice` and `char-analysis` from the
+    // AI prompt template. Available block types are: heading, text, image,
+    // video, quiz, text-analyzer, youtube-extract, youtube-link.
     const prompt = language === 'ko'
       ? `당신은 중국어 교육 전문가입니다. 아래 수업 정보를 바탕으로 수업 블록 콘텐츠를 생성해 주세요.
 
@@ -18,9 +21,8 @@ export async function POST(request: Request) {
   "blocks": [
     {"type": "heading", "content": {"text": "수업 제목", "level": 1}},
     {"type": "text", "content": {"text": "도입 설명 (2-3문장, 한국어)"}},
-    {"type": "tone-practice", "content": {"text": "중국어 핵심 문장 (5자 내외)", "pinyin": "병음 (띄어쓰기로 구분)"}},
+    {"type": "text-analyzer", "content": {"rawText": "이번 차시 중국어 핵심 본문 (3~6문장)"}},
     {"type": "text", "content": {"text": "문법 설명 및 예문 (한국어)"}},
-    {"type": "char-analysis", "content": {"character": "핵심 한자 1개", "pinyin": "병음", "meaning": "의미", "strokes": 5, "radical": "부수", "examples": [{"word": "예시 단어", "pinyin": "병음", "meaning": "뜻"}]}},
     {"type": "quiz", "content": {"question": "이해 확인 질문", "options": ["선택지1", "선택지2", "선택지3", "선택지4"], "correct": 0}}
   ]
 }`
@@ -31,14 +33,14 @@ Topic: ${topic}
 Objectives: ${objectives}
 Level: ${courseLevel}
 
+Available block types: heading, text, image, video, quiz, text-analyzer, youtube-extract, youtube-link.
 Respond ONLY with valid JSON:
 {
   "blocks": [
     {"type": "heading", "content": {"text": "Lesson Title", "level": 1}},
     {"type": "text", "content": {"text": "Introduction paragraph (2-3 sentences)"}},
-    {"type": "tone-practice", "content": {"text": "Key Chinese phrase", "pinyin": "pinyin with tones"}},
+    {"type": "text-analyzer", "content": {"rawText": "Core Chinese passage for this lesson (3-6 sentences)"}},
     {"type": "text", "content": {"text": "Grammar explanation with examples"}},
-    {"type": "char-analysis", "content": {"character": "汉", "pinyin": "hàn", "meaning": "Chinese", "strokes": 5, "radical": "氵", "examples": [{"word": "汉语", "pinyin": "hànyǔ", "meaning": "Chinese language"}]}},
     {"type": "quiz", "content": {"question": "Comprehension check question", "options": ["A", "B", "C", "D"], "correct": 0}}
   ]
 }`;

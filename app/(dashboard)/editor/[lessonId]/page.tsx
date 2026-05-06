@@ -35,10 +35,11 @@ export default async function LessonEditorPage({ params }: { params: Promise<{ l
   return (
     <EditorProvider initialBlocks={initialBlocks}>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'calc(100vh - 4rem)' }}>
-        <EditorToolbar 
-          lessonId={lessonId} 
-          courseId={lesson.courseId} 
-          title={lesson.title} 
+        <EditorToolbar
+          lessonId={lessonId}
+          courseId={lesson.courseId}
+          title={lesson.title}
+          initialStatus={lesson.status}
         />
 
         {/* Workspace */}

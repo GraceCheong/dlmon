@@ -1,17 +1,19 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  FileText, 
-  Settings, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  FileText,
+  Settings,
   LogOut,
   PlusCircle,
   Menu,
   Sparkles,
   Users,
-  Award
+  Award,
+  FileDown
 } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -26,12 +28,13 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  if (status === 'unauthenticated') {
-    router.push('/login');
-    return null;
-  }
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || status === 'unauthenticated') {
     return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}><div className="spinner"></div></div>;
   }
 
@@ -78,8 +81,8 @@ export default function DashboardLayout({
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <SidebarLink href="/dashboard" icon={<LayoutDashboard size={20} />} label={t.common.dashboard} active={pathname === '/dashboard'} />
           <SidebarLink href="/courses" icon={<BookOpen size={20} />} label={t.common.myCourses} active={pathname === '/courses'} />
-          <SidebarLink href="/members" icon={<Users size={20} />} label="수강생 관리" active={pathname === '/members'} />
-          <SidebarLink href="/assignments" icon={<Award size={20} />} label="과제 및 평가" active={pathname.startsWith('/assignments')} />
+          <SidebarLink href="/members" icon={<Users size={20} />} label={t.common.members} active={pathname === '/members'} />
+          <SidebarLink href="/assignments" icon={<Award size={20} />} label={t.common.assignments} active={pathname.startsWith('/assignments')} />
           <SidebarLink href="/syllabi" icon={<FileText size={20} />} label={t.common.syllabi} active={pathname === '/syllabi'} />
           
           <div style={{ margin: '1.5rem 0 0.5rem', padding: '0 0.75rem', fontSize: '0.7rem', color: '#CBD5E0', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em' }}>
@@ -89,6 +92,7 @@ export default function DashboardLayout({
           <Link href="/courses/new" className="btn btn-primary" style={{ justifyContent: 'flex-start', padding: '0.875rem 1.25rem' }}>
             <PlusCircle size={20} /> {t.common.newCourse}
           </Link>
+          <SidebarLink href="/materials/import/youtube" icon={<FileDown size={20} />} label={t.common.youtubeImport} active={pathname.startsWith('/materials')} />
         </nav>
 
         <div style={{ borderTop: '2px solid #F8FAFC', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -162,7 +166,7 @@ export default function DashboardLayout({
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{session?.user?.name || '선생님'}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>정회원 계정</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>{t.common.memberType}</div>
             </div>
             <div style={{ 
               width: '48px', 

@@ -297,8 +297,7 @@ export default function CurriculumEditor({
         }}
       >
         {saving ? <Loader2 size={20} className="spin" /> : <Plus size={24} />}{' '}
-        {weeks.length + 1}
-        {t.plan.week} {t.plan.addWeek}
+        {weeks.length + 1} {t.plan.addWeek}
       </button>
 
       {saveError && (

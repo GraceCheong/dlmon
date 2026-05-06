@@ -48,7 +48,7 @@ export default function MediaImportBlock({ id, content }: { id: string; content:
           updateBlock(id, { url: inputUrl, ...data });
         } else {
           const err = await response.json().catch(() => ({}));
-          setErrorMsg(err.error || '미디어 추출에 실패했습니다.');
+          setErrorMsg(err.message || err.error || '미디어 추출에 실패했습니다.');
         }
       } catch (e) {
         clearInterval(stepTimer);
@@ -66,7 +66,7 @@ export default function MediaImportBlock({ id, content }: { id: string; content:
           updateBlock(id, { url: inputUrl, ...data });
         } else {
           const err = await response.json().catch(() => ({}));
-          setErrorMsg(err.error || '미디어 추출에 실패했습니다.');
+          setErrorMsg(err.message || err.error || '미디어 추출에 실패했습니다.');
         }
       } catch (e) {
         setErrorMsg('서버와 통신하는 중 오류가 발생했습니다.');

@@ -1,0 +1,37 @@
+- main [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: 課
+        - generic [ref=e7]: 課意studio
+      - generic [ref=e8]:
+        - link "제공 서비스" [ref=e9] [cursor=pointer]:
+          - /url: "#features"
+        - link "대시보드" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard
+          - text: 대시보드
+          - img [ref=e11]
+  - generic [ref=e14]:
+    - heading "AI 와 함께하는 스마트 중국어 수업 제작" [level=1] [ref=e15]
+    - paragraph [ref=e16]: 복잡한 강의 계획서 설계부터 멀티미디어 수업 자료 제작까지, AI 비서와 함께 단 몇 분 만에 완성하세요.
+    - link "지금 바로 시작하기" [ref=e18] [cursor=pointer]:
+      - /url: /dashboard
+    - img "Letto Teacher Studio Dashboard" [ref=e20]
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - heading "제공 서비스" [level=2] [ref=e24]
+      - paragraph [ref=e25]: AI와 함께하는 스마트 중국어 수업 제작
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - img [ref=e29]
+        - heading "AI 기반 학습 계획 설계" [level=3] [ref=e31]
+        - paragraph [ref=e32]: 학습 목표와 수준에 딱 맞는 15주 분량의 강의 계획서와 실라버스 초안을 자동으로 생성합니다.
+      - generic [ref=e33]:
+        - img [ref=e35]
+        - heading "직관적인 블록 에디터" [level=3] [ref=e39]
+        - paragraph [ref=e40]: 원하는 콘텐츠를 드래그 앤 드롭으로 배치하세요. 텍스트, 이미지, 퀴즈를 자유롭게 구성할 수 있습니다.
+      - generic [ref=e41]:
+        - img [ref=e43]
+        - heading "중국어 특화 콘텐츠" [level=3] [ref=e47]
+        - paragraph [ref=e48]: HSK 텍스트 분석과 유튜브 미디어 추출 등 중국어 수업에 꼭 필요한 전용 블록을 제공합니다.
+  - paragraph [ref=e51]: © 2026 課意studio (KeYi Studio). AI-powered Chinese Education Platform.

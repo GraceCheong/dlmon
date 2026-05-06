@@ -73,7 +73,7 @@ export default async function AssignmentViewPage({ params }: { params: Promise<{
         <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#718096' }}>
           <strong>학생용 공유 링크: </strong>
           <code style={{ background: '#E2E8F0', padding: '0.2rem 0.5rem', borderRadius: '4px', userSelect: 'all' }}>
-            http://localhost:3000/student/assignments/{assignment.id}
+            {process.env.NEXTAUTH_URL || 'http://localhost:3000'}/student/assignments/{assignment.id}
           </code>
         </div>
       </div>

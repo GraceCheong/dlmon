@@ -7,7 +7,7 @@ import { UserPlus, Mail, Search, Trash2, X, Loader2 } from 'lucide-react';
 interface Member {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   role: string;
   joinedAt: string;
 }
@@ -27,7 +27,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
     const q = searchTerm.trim().toLowerCase();
     if (!q) return members;
     return members.filter(
-      (m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
+      (m) => m.name.toLowerCase().includes(q) || (m.email ?? '').toLowerCase().includes(q),
     );
   }, [members, searchTerm]);
 

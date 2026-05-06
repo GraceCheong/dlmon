@@ -19,7 +19,7 @@ import {
 import { useEditor } from '@/context/EditorContext';
 import { useLanguage } from '@/context/LanguageContext';
 import SortableBlockWrapper from './SortableBlockWrapper';
-import { Plus, Type, Image as ImageIcon, Video, HelpCircle, Heading, Languages, Globe, ListMusic, BookOpen, Smartphone } from 'lucide-react';
+import { Plus, Type, Image as ImageIcon, Video, HelpCircle, Heading, BookOpen, PlayCircle, Link as LinkIcon } from 'lucide-react';
 
 export default function EditorCanvas() {
   const { t } = useLanguage();
@@ -74,43 +74,28 @@ export default function EditorCanvas() {
               icon={<Video size={18} />} 
               label={t.editor.blocks.video} 
             />
-            <BlockAddButton 
-              onClick={() => addBlock('quiz', { question: '', options: [] })} 
-              icon={<HelpCircle size={18} />} 
-              label={t.editor.blocks.quiz} 
+            <BlockAddButton
+              onClick={() => addBlock('quiz', { question: '', options: [] })}
+              icon={<HelpCircle size={18} />}
+              label={t.editor.blocks.quiz}
+            />
+            <BlockAddButton
+              onClick={() => addBlock('youtube-link', { url: '', videoId: '', originalUrl: '', thumbnailStatus: 'unavailable' })}
+              icon={<LinkIcon size={18} />}
+              label={t.editor.blocks.youtubeLink || '유튜브 링크'}
             />
 
             <h3 style={{ fontSize: '0.75rem', color: '#A0AEC0', textTransform: 'uppercase', marginBottom: '0.5rem', marginTop: '1.5rem', fontWeight: 800, letterSpacing: '0.1em' }}>{t.editor.chineseEducation}</h3>
-            
-            <BlockAddButton 
-              onClick={() => addBlock('tone-practice', { text: '', pinyin: '', tones: [] })} 
-              icon={<Languages size={18} />} 
-              label={t.editor.blocks.tonePractice} 
+
+            <BlockAddButton
+              onClick={() => addBlock('text-analyzer', { rawText: '' })}
+              icon={<BookOpen size={18} />}
+              label={t.editor.blocks.textAnalyzer || 'HSK 텍스트 분석'}
             />
-            <BlockAddButton 
-              onClick={() => addBlock('char-analysis', { character: '', meaning: '', components: [] })} 
-              icon={<Type size={18} />} 
-              label={t.editor.blocks.charAnalysis} 
-            />
-            <BlockAddButton 
-              onClick={() => addBlock('culture-comparison', { theme: '', items: [] })} 
-              icon={<Globe size={18} />} 
-              label={t.editor.blocks.cultureComparison} 
-            />
-            <BlockAddButton 
-              onClick={() => addBlock('subtitle-analysis', { url: '', highlights: [] })} 
-              icon={<ListMusic size={18} />} 
-              label={t.editor.blocks.subtitleAnalysis} 
-            />
-            <BlockAddButton 
-              onClick={() => addBlock('text-analyzer', { rawText: '' })} 
-              icon={<BookOpen size={18} />} 
-              label={t.editor.blocks.textAnalyzer || 'HSK 텍스트 분석'} 
-            />
-            <BlockAddButton 
-              onClick={() => addBlock('media-import', { url: '' })} 
-              icon={<Smartphone size={18} />} 
-              label={t.editor.blocks.mediaImport || '실생활 미디어 추출'} 
+            <BlockAddButton
+              onClick={() => addBlock('youtube-extract', { url: '' })}
+              icon={<PlayCircle size={18} />}
+              label={t.editor.blocks.youtubeExtract || '유튜브 미디어 추출'}
             />
           </div>
         </div>

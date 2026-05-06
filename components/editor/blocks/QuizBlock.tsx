@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditor } from '@/context/EditorContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { HelpCircle, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 
 interface Option {
@@ -11,6 +12,7 @@ interface Option {
 
 export default function QuizBlock({ id, content }: { id: string, content: { question: string, options: Option[] } }) {
   const { updateBlock } = useEditor();
+  const { t } = useLanguage();
 
   const handleAddOption = () => {
     const newOption = { id: Date.now().toString(), text: '', isCorrect: false };
@@ -39,7 +41,7 @@ export default function QuizBlock({ id, content }: { id: string, content: { ques
         type="text"
         value={content.question || ''}
         onChange={(e) => updateBlock(id, { question: e.target.value })}
-        placeholder="Enter your question here..."
+        placeholder={t.editor.placeholders.question}
         style={{
           width: '100%',
           border: 'none',
@@ -65,7 +67,7 @@ export default function QuizBlock({ id, content }: { id: string, content: { ques
               type="text"
               value={option.text}
               onChange={(e) => handleUpdateOption(option.id, { text: e.target.value })}
-              placeholder="Enter option..."
+              placeholder={t.editor.placeholders.option}
               className="input"
               style={{ flex: 1, padding: '0.5rem 0.75rem' }}
             />

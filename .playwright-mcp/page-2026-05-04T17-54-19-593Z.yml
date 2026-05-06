@@ -1,0 +1,252 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e16]: 課
+        - generic [ref=e17]:
+          - generic [ref=e18]: 課意studio
+          - text: KeYi Studio
+      - navigation [ref=e19]:
+        - link "대시보드" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e22]
+          - generic [ref=e27]: 대시보드
+        - link "내 강의실" [ref=e28] [cursor=pointer]:
+          - /url: /courses
+          - img [ref=e30]
+          - generic [ref=e32]: 내 강의실
+        - link "수강생 관리" [ref=e33] [cursor=pointer]:
+          - /url: /members
+          - img [ref=e35]
+          - generic [ref=e40]: 수강생 관리
+        - link "과제 및 평가" [ref=e41] [cursor=pointer]:
+          - /url: /assignments
+          - img [ref=e43]
+          - generic [ref=e46]: 과제 및 평가
+        - link "강의 계획서" [ref=e47] [cursor=pointer]:
+          - /url: /syllabi
+          - img [ref=e49]
+          - generic [ref=e52]: 강의 계획서
+        - generic [ref=e53]: 수업 자료 제작
+        - link "새 강좌 만들기" [ref=e54] [cursor=pointer]:
+          - /url: /courses/new
+          - img [ref=e55]
+          - text: 새 강좌 만들기
+        - link "YouTube AI 교재" [ref=e57] [cursor=pointer]:
+          - /url: /materials/import/youtube
+          - img [ref=e59]
+          - generic [ref=e63]: YouTube AI 교재
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - button "한국어" [ref=e67] [cursor=pointer]
+          - button "English" [ref=e68] [cursor=pointer]
+        - link "계정 설정" [ref=e69] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e71]
+          - generic [ref=e74]: 계정 설정
+        - button "로그아웃" [ref=e75] [cursor=pointer]:
+          - img [ref=e76]
+          - generic [ref=e79]: 로그아웃
+    - main [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - heading "수업 관리" [level=1] [ref=e83]
+          - paragraph [ref=e84]: 선생님의 소중한 수업 자료와 강좌를 확인해 보세요.
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - generic [ref=e87]: wrong
+            - generic [ref=e88]: 정회원 계정
+          - generic [ref=e89]: WR
+      - generic [ref=e175]:
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - generic [ref=e178]:
+              - link "대시보드" [ref=e179] [cursor=pointer]:
+                - /url: /dashboard
+              - img [ref=e180]
+              - generic [ref=e182]: "기초 회화: 일상 중국어"
+            - heading "주간 학습 계획" [level=1] [ref=e183]
+            - paragraph [ref=e184]: 각 주차별 수업 내용을 확인하고 수정할 수 있습니다.
+          - link "강의 계획서 미리보기" [ref=e185] [cursor=pointer]:
+            - /url: /courses/cmori13th0003ck9ovaoagfyq/syllabus
+            - img [ref=e186]
+            - text: 강의 계획서 미리보기
+        - generic [ref=e189]:
+          - generic [ref=e190]:
+            - generic [ref=e191] [cursor=pointer]:
+              - generic [ref=e192]:
+                - generic [ref=e193]: "1"
+                - generic [ref=e194]:
+                  - heading "你好！인사와 자기소개" [level=3] [ref=e195]
+                  - generic [ref=e196]: 1주차 수업 주제
+              - generic [ref=e197]:
+                - button "수정" [ref=e198]:
+                  - img [ref=e199]
+                - img [ref=e201]
+            - generic [ref=e203]:
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - generic [ref=e206]:
+                    - img [ref=e208]
+                    - text: 학습 목표
+                  - paragraph [ref=e212]: 기본 인사말과 자기소개 표현 익히기
+                - generic [ref=e213]:
+                  - generic [ref=e214]:
+                    - img [ref=e216]
+                    - text: 주요 활동
+                  - paragraph [ref=e218]: "역할극: 처음 만나는 상황, 이름/나이/직업 묻고 답하기"
+              - generic [ref=e219]:
+                - generic [ref=e220]:
+                  - generic [ref=e221]:
+                    - img [ref=e223]
+                    - text: 평가 및 과제
+                  - paragraph [ref=e225]: 자기소개 1분 스피치
+                - generic [ref=e226]:
+                  - button "내용 수정" [ref=e227] [cursor=pointer]
+                  - button "수업 자료 제작" [ref=e228] [cursor=pointer]
+          - generic [ref=e230] [cursor=pointer]:
+            - generic [ref=e231]:
+              - generic [ref=e232]: "2"
+              - generic [ref=e233]:
+                - heading "我的家人 가족 소개" [level=3] [ref=e234]
+                - generic [ref=e235]: 2주차 수업 주제
+            - generic [ref=e236]:
+              - button "수정" [ref=e237]:
+                - img [ref=e238]
+              - img [ref=e240]
+          - generic [ref=e243] [cursor=pointer]:
+            - generic [ref=e244]:
+              - generic [ref=e245]: "3"
+              - generic [ref=e246]:
+                - heading "几点了？시간과 날짜" [level=3] [ref=e247]
+                - generic [ref=e248]: 3주차 수업 주제
+            - generic [ref=e249]:
+              - button "수정" [ref=e250]:
+                - img [ref=e251]
+              - img [ref=e253]
+          - generic [ref=e256] [cursor=pointer]:
+            - generic [ref=e257]:
+              - generic [ref=e258]: "4"
+              - generic [ref=e259]:
+                - heading "买东西 쇼핑하기 1" [level=3] [ref=e260]
+                - generic [ref=e261]: 4주차 수업 주제
+            - generic [ref=e262]:
+              - button "수정" [ref=e263]:
+                - img [ref=e264]
+              - img [ref=e266]
+          - generic [ref=e269] [cursor=pointer]:
+            - generic [ref=e270]:
+              - generic [ref=e271]: "5"
+              - generic [ref=e272]:
+                - heading "颜色和衣服 색깔과 옷" [level=3] [ref=e273]
+                - generic [ref=e274]: 5주차 수업 주제
+            - generic [ref=e275]:
+              - button "수정" [ref=e276]:
+                - img [ref=e277]
+              - img [ref=e279]
+          - generic [ref=e282] [cursor=pointer]:
+            - generic [ref=e283]:
+              - generic [ref=e284]: "6"
+              - generic [ref=e285]:
+                - heading "点菜 음식 주문하기" [level=3] [ref=e286]
+                - generic [ref=e287]: 6주차 수업 주제
+            - generic [ref=e288]:
+              - button "수정" [ref=e289]:
+                - img [ref=e290]
+              - img [ref=e292]
+          - generic [ref=e295] [cursor=pointer]:
+            - generic [ref=e296]:
+              - generic [ref=e297]: "7"
+              - generic [ref=e298]:
+                - heading "你喜欢吃什么？ 취향 묻기" [level=3] [ref=e299]
+                - generic [ref=e300]: 7주차 수업 주제
+            - generic [ref=e301]:
+              - button "수정" [ref=e302]:
+                - img [ref=e303]
+              - img [ref=e305]
+          - generic [ref=e308] [cursor=pointer]:
+            - generic [ref=e309]:
+              - generic [ref=e310]: "8"
+              - generic [ref=e311]:
+                - heading "중간고사 및 복습" [level=3] [ref=e312]
+                - generic [ref=e313]: 8주차 수업 주제
+            - generic [ref=e314]:
+              - button "수정" [ref=e315]:
+                - img [ref=e316]
+              - img [ref=e318]
+          - generic [ref=e321] [cursor=pointer]:
+            - generic [ref=e322]:
+              - generic [ref=e323]: "9"
+              - generic [ref=e324]:
+                - heading "去哪里？ 장소와 위치" [level=3] [ref=e325]
+                - generic [ref=e326]: 9주차 수업 주제
+            - generic [ref=e327]:
+              - button "수정" [ref=e328]:
+                - img [ref=e329]
+              - img [ref=e331]
+          - generic [ref=e334] [cursor=pointer]:
+            - generic [ref=e335]:
+              - generic [ref=e336]: "10"
+              - generic [ref=e337]:
+                - heading "怎么走？ 교통수단" [level=3] [ref=e338]
+                - generic [ref=e339]: 10주차 수업 주제
+            - generic [ref=e340]:
+              - button "수정" [ref=e341]:
+                - img [ref=e342]
+              - img [ref=e344]
+          - generic [ref=e347] [cursor=pointer]:
+            - generic [ref=e348]:
+              - generic [ref=e349]: "11"
+              - generic [ref=e350]:
+                - heading "天气怎么样？ 날씨와 계절" [level=3] [ref=e351]
+                - generic [ref=e352]: 11주차 수업 주제
+            - generic [ref=e353]:
+              - button "수정" [ref=e354]:
+                - img [ref=e355]
+              - img [ref=e357]
+          - generic [ref=e360] [cursor=pointer]:
+            - generic [ref=e361]:
+              - generic [ref=e362]: "12"
+              - generic [ref=e363]:
+                - heading "看病 병원 가기" [level=3] [ref=e364]
+                - generic [ref=e365]: 12주차 수업 주제
+            - generic [ref=e366]:
+              - button "수정" [ref=e367]:
+                - img [ref=e368]
+              - img [ref=e370]
+          - generic [ref=e373] [cursor=pointer]:
+            - generic [ref=e374]:
+              - generic [ref=e375]: "13"
+              - generic [ref=e376]:
+                - heading "爱好 취미 생활" [level=3] [ref=e377]
+                - generic [ref=e378]: 13주차 수업 주제
+            - generic [ref=e379]:
+              - button "수정" [ref=e380]:
+                - img [ref=e381]
+              - img [ref=e383]
+          - generic [ref=e386] [cursor=pointer]:
+            - generic [ref=e387]:
+              - generic [ref=e388]: "14"
+              - generic [ref=e389]:
+                - heading "旅行 여행 계획" [level=3] [ref=e390]
+                - generic [ref=e391]: 14주차 수업 주제
+            - generic [ref=e392]:
+              - button "수정" [ref=e393]:
+                - img [ref=e394]
+              - img [ref=e396]
+          - generic [ref=e399] [cursor=pointer]:
+            - generic [ref=e400]:
+              - generic [ref=e401]: "15"
+              - generic [ref=e402]:
+                - heading "기말 평가 및 롤플레이" [level=3] [ref=e403]
+                - generic [ref=e404]: 15주차 수업 주제
+            - generic [ref=e405]:
+              - button "수정" [ref=e406]:
+                - img [ref=e407]
+              - img [ref=e409]
+          - button "16주차 주차 추가" [ref=e411] [cursor=pointer]:
+            - img [ref=e412]
+            - text: 16주차 주차 추가
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e12]

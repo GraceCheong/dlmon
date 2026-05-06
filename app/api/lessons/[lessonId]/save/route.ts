@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+/**
+ * @deprecated since Phase 3 (2026-05-01). This route has no ownership check
+ * and should not be used by new code. Use `PATCH /api/lessons/[lessonId]/blocks`
+ * instead — it enforces Lesson → Course → User ownership and returns the
+ * persisted blocks in the response.
+ *
+ * Kept temporarily for backward compatibility with any external/legacy callers.
+ * Remove once nothing in the project (or the student portal) references it.
+ */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ lessonId: string }> }

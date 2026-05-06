@@ -10,7 +10,7 @@ export const aiClient = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'local-dummy-key', // Local endpoints usually ignore this
 });
 
-// Helper to get the default model string.
-// For Ollama, this might be 'llama3', 'qwen2', etc.
-// The user needs to ensure this model is pulled in their local environment.
-export const defaultModel = process.env.LOCAL_LLM_MODEL || 'llama3';
+// Default local model. Override with the LOCAL_LLM_MODEL env var.
+// The user must ensure this model is pulled in their local Ollama / LM Studio install
+// (e.g. `ollama pull qwen3:30b`).
+export const defaultModel = process.env.LOCAL_LLM_MODEL || 'qwen3:30b';

@@ -1,10 +1,12 @@
 'use client';
 
 import { useEditor } from '@/context/EditorContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useRef, useEffect } from 'react';
 
 export default function TextBlock({ id, content }: { id: string, content: { text: string } }) {
-  const { updateBlock } = useEditor();
+  const { updateBlock, isPreview } = useEditor();
+  const { t } = useLanguage();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -14,13 +16,18 @@ export default function TextBlock({ id, content }: { id: string, content: { text
     }
   }, [content.text]);
 
+  if (isPreview) {
+    if (!content.text) return null;
+    return <p style={{ fontSize: '1rem', lineHeight: '1.6', padding: '0.5rem 0' }}>{content.text}</p>;
+  }
+
   return (
     <div style={{ width: '100%', padding: '0.5rem 0' }}>
       <textarea
         ref={textareaRef}
         value={content.text || ''}
         onChange={(e) => updateBlock(id, { text: e.target.value })}
-        placeholder="Type something..."
+        placeholder={t.editor.placeholders.text}
         style={{
           width: '100%',
           border: 'none',

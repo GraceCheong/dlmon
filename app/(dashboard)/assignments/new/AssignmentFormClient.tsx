@@ -7,6 +7,7 @@ import { Save, Loader2, FileText, CheckCircle } from 'lucide-react';
 export default function AssignmentFormClient({ courses }: { courses: any[] }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [selectedCourse, setSelectedCourse] = useState(courses[0]?.id || '');
   const [formData, setFormData] = useState({
     title: '',
@@ -24,6 +25,7 @@ export default function AssignmentFormClient({ courses }: { courses: any[] }) {
     if (!formData.lessonId || !formData.title || !formData.prompt) return;
 
     setIsSubmitting(true);
+    setSubmitError('');
     try {
       const response = await fetch('/api/assignments', {
         method: 'POST',
@@ -35,10 +37,11 @@ export default function AssignmentFormClient({ courses }: { courses: any[] }) {
         router.push('/assignments');
         router.refresh();
       } else {
-        console.error('Failed to create assignment');
+        const data = await response.json().catch(() => ({}));
+        setSubmitError(data.error || '과제 생성에 실패했습니다.');
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
+      setSubmitError('네트워크 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -124,6 +127,12 @@ export default function AssignmentFormClient({ courses }: { courses: any[] }) {
           required
         />
       </div>
+
+      {submitError && (
+        <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+          {submitError}
+        </div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
         <button type="button" onClick={() => router.back()} className="btn btn-secondary">

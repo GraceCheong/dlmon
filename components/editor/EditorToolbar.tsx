@@ -7,13 +7,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function EditorToolbar({ lessonId, courseId, title }: { lessonId: string; courseId: string; title: string }) {
+export default function EditorToolbar({ lessonId, courseId, title, initialStatus }: { lessonId: string; courseId: string; title: string; initialStatus?: string }) {
   const { t } = useLanguage();
   const { blocks, isPreview, setIsPreview } = useEditor();
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [status, setStatus] = useState('draft');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [status, setStatus] = useState(initialStatus || 'draft');
   const [exportingPdf, setExportingPdf] = useState(false);
   const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null);
   const router = useRouter();
@@ -27,20 +28,30 @@ export default function EditorToolbar({ lessonId, courseId, title }: { lessonId:
   }, []);
 
   const handleSave = async () => {
+    if (saving) return; // prevent duplicate saves
     setSaving(true);
     setSaved(false);
+    setSaveError(null);
     try {
-      const response = await fetch(`/api/lessons/${lessonId}/save`, {
-        method: 'POST',
+      // Phase 3: switched from POST /api/lessons/:id/save (no ownership check)
+      // to PATCH /api/lessons/:id/blocks (enforces ownership; returns persisted blocks).
+      const response = await fetch(`/api/lessons/${lessonId}/blocks`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blocks }),
+        body: JSON.stringify({ blocks, status: 'draft' }),
       });
-      if (response.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setSaveError(data.error || '임시 저장에 실패했습니다.');
+        return;
       }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      // Refresh server data so the page reflects the new updatedAt.
+      router.refresh();
     } catch (e) {
       console.error('Save failed:', e);
+      setSaveError('네트워크 오류로 임시 저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -66,10 +77,18 @@ export default function EditorToolbar({ lessonId, courseId, title }: { lessonId:
 
   const handleExportPdf = async () => {
     setExportingPdf(true);
+    const element = document.getElementById('editor-canvas-content');
+    if (!element) { setExportingPdf(false); return; }
+
+    // YouTube iframes don't render in html2canvas. Swap them to the static
+    // PDF fallback divs (thumbnail + title + link) before capture, then restore.
+    const embeds = Array.from(element.querySelectorAll<HTMLElement>('[data-yt-embed]'));
+    const fallbacks = Array.from(element.querySelectorAll<HTMLElement>('[data-yt-pdf-fallback]'));
+    embeds.forEach(el => { el.style.display = 'none'; });
+    fallbacks.forEach(el => { el.style.display = 'block'; });
+
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      const element = document.getElementById('editor-canvas-content');
-      if (!element) { setExportingPdf(false); return; }
       const options: any = {
         margin: [10, 10, 10, 10],
         filename: `${title.substring(0, 30)}.pdf`,
@@ -82,6 +101,9 @@ export default function EditorToolbar({ lessonId, courseId, title }: { lessonId:
     } catch (e) {
       console.error('PDF export failed:', e);
     } finally {
+      // Always restore regardless of success or failure
+      embeds.forEach(el => { el.style.display = ''; });
+      fallbacks.forEach(el => { el.style.display = ''; });
       setExportingPdf(false);
     }
   };
@@ -115,7 +137,15 @@ export default function EditorToolbar({ lessonId, courseId, title }: { lessonId:
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
         {saved && (
           <span style={{ fontSize: '0.875rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <Check size={16} /> {t.editor.saved}
+            <Check size={16} /> {t.editor.savedDraft}
+          </span>
+        )}
+        {saveError && (
+          <span
+            style={{ fontSize: '0.875rem', color: '#991B1B', fontWeight: 600 }}
+            title={saveError}
+          >
+            ⚠ {saveError}
           </span>
         )}
 
@@ -130,11 +160,11 @@ export default function EditorToolbar({ lessonId, courseId, title }: { lessonId:
         {!isPreview && (
           <>
             <button className="btn btn-secondary" style={{ fontSize: '0.875rem' }} onClick={handleSave} disabled={saving}>
-              {saving ? t.common.loading : <><Save size={18} /> {t.editor.saveDraft}</>}
+              {saving ? <><Save size={18} /> {t.editor.saving}</> : <><Save size={18} /> {t.editor.saveDraft}</>}
             </button>
 
             <button className="btn" style={{ fontSize: '0.875rem', background: '#F8FAFC', color: '#718096', border: '1px solid #E2E8F0' }} onClick={handleExportPdf} disabled={exportingPdf} title="PDF 다운로드">
-              {exportingPdf ? <><Download size={18} /> 생성 중...</> : <><Download size={18} /> PDF</>}
+              {exportingPdf ? <><Download size={18} /> {t.editor.generatingPdf}</> : <><Download size={18} /> PDF</>}
             </button>
 
             <button className="btn btn-primary" style={{ fontSize: '0.875rem' }} onClick={handlePublish} disabled={publishing}>

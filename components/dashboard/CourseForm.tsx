@@ -19,6 +19,7 @@ export default function CourseForm() {
   const router = useRouter();
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [generateError, setGenerateError] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -35,23 +36,24 @@ export default function CourseForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+    setGenerateError('');
+
     try {
       const response = await fetch('/api/courses/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          language
-        }),
+        body: JSON.stringify({ ...formData, language }),
       });
-      
+
       const data = await response.json();
       if (data.id) {
         router.push(`/courses/${data.id}/plan`);
+        return; // keep loading=true while navigating
       }
-    } catch (error) {
-      console.error('Generation failed:', error);
+      setGenerateError(data.error || '강좌 생성에 실패했습니다. 다시 시도해 주세요.');
+    } catch {
+      setGenerateError('서버와 통신하는 중 오류가 발생했습니다.');
+    } finally {
       setLoading(false);
     }
   };
@@ -190,10 +192,16 @@ export default function CourseForm() {
         </div>
       </div>
 
+      {generateError && (
+        <div style={{ background: '#FEE2E2', color: '#991B1B', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', marginTop: '1.5rem', fontWeight: 600, fontSize: '0.9rem' }}>
+          {generateError}
+        </div>
+      )}
+
       <div style={{ marginTop: '3rem' }}>
-        <button 
-          className="btn btn-primary" 
-          type="submit" 
+        <button
+          className="btn btn-primary"
+          type="submit"
           disabled={loading}
           style={{ width: '100%', padding: '1.25rem', fontSize: '1.25rem', borderRadius: '1.5rem' }}
         >

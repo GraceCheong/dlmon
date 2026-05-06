@@ -22,20 +22,25 @@ model User {
   sessions      Session[]
   courses       Course[]
   members       Member[]  // Students managed by this teacher
+  rubrics       WritingRubric[]
+  importJobs    MediaImportJob[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
 model Member {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  role      String   @default("student")
-  userId    String   // The teacher who manages this member
-  user      User     @relation(fields: [userId], references: [id])
+  id          String    @id @default(cuid())
+  name        String
+  email       String?   // optional in MVP — teacher-managed records may not have an email
+  role        String    @default("student")
+  userId      String    // The teacher who manages this member
+  className   String?   // Optional class/cohort label (e.g. "초급반-A")
+  metadata    String?   // Flexible JSON blob — SQLite stores as TEXT, parse client-side
+  deletedAt   DateTime? // Soft delete; queries should filter `deletedAt: null`
+  user        User      @relation(fields: [userId], references: [id])
   submissions Submission[]
-  joinedAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  joinedAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Account {
@@ -130,26 +135,177 @@ model LessonBlock {
 }
 
 model Assignment {
-  id          String       @id @default(cuid())
-  lessonId    String
-  title       String
-  type        String       // 'speaking' or 'writing'
-  prompt      String       // The question or text to read
-  dueDate     DateTime?
-  lesson      Lesson       @relation(fields: [lessonId], references: [id])
-  submissions Submission[]
+  id             String       @id @default(cuid())
+  lessonId       String
+  title          String
+  type           String       // 'speaking' or 'writing'
+  prompt         String       // The question or text to read
+  dueDate        DateTime?
+  // Phase 3: writing-evaluation fields. Optional so existing rows stay valid.
+  hskLevel       String?      // e.g. "HSK1".."HSK6", nullable for non-leveled assignments
+  targetAudience String?      // e.g. "직장인 입문자", "유학 준비생"
+  rubricId       String?      // Pre-generated rubric used by default for evaluations
+  lesson         Lesson       @relation(fields: [lessonId], references: [id])
+  submissions    Submission[]
 }
 
 model Submission {
-  id              String     @id @default(cuid())
-  assignmentId    String
-  memberId        String
-  contentUrl      String?    // URL to audio file (for speaking)
-  contentText     String?    // Text input (for writing)
-  aiScore         Int?       // Score out of 100
-  aiFeedback      String?    // AI generated feedback
-  status          String     @default("pending") // 'pending', 'graded'
-  assignment      Assignment @relation(fields: [assignmentId], references: [id])
-  member          Member     @relation(fields: [memberId], references: [id])
-  createdAt       DateTime   @default(now())
+  id                       String     @id @default(cuid())
+  assignmentId             String
+  memberId                 String
+  contentUrl               String?    // URL to audio file (for speaking)
+  contentText              String?    // Text input (for writing)
+  // Legacy fields — kept for back-compat with old grading UI. New code should
+  // read scores via WritingEvaluation, not these fields.
+  aiScore                  Int?       // Score out of 100 (legacy quick grade)
+  aiFeedback               String?    // AI generated feedback (legacy)
+  status                   String     @default("pending") // 'pending', 'graded'
+  // Phase 3: writing-evaluation fields.
+  rubricId                 String?    // Rubric used (or chosen for) this submission
+  languageValidationStatus String?    // e.g. "ok", "wrong_language", "unsupported"
+  assignment               Assignment @relation(fields: [assignmentId], references: [id])
+  member                   Member     @relation(fields: [memberId], references: [id])
+  evaluations              WritingEvaluation[]
+  createdAt                DateTime   @default(now())
+}
+
+/**
+ * Async YouTube import job. Tracks every stage from metadata fetch through
+ * AI content generation. Internal audio file paths are stored here but MUST
+ * NOT appear in any public API response — filter them at the route layer.
+ */
+model MediaImportJob {
+  id               String    @id @default(cuid())
+  userId           String
+  status           String    @default("queued")
+  // source
+  sourceType       String    @default("youtube")
+  sourceUrl        String
+  videoId          String?
+  videoTitle       String?
+  channelName      String?
+  durationSeconds  Int?
+  thumbnailUrl     String?
+  // transcript
+  transcriptText   String?
+  transcriptSource String?   // youtube_manual | youtube_auto | whisper | manual
+  transcriptStatus String?   // fetched | unavailable | failed
+  // audio — internal only, never exposed to the frontend
+  audioStatus      String?   // not_needed | downloaded | processing | transcribed | deleted | failed
+  audioDurationSec Float?
+  audioSizeBytes   Int?
+  audioDeletedAt   DateTime?
+  audioStoragePath String?   // *** NEVER return this field from any API route ***
+  // STT
+  sttProvider      String?
+  sttModel         String?
+  sttRawResponse   String?
+  // AI
+  aiProvider       String?
+  aiModel          String?
+  aiRawResponse    String?
+  aiResult         String?   // JSON: ImportedYouTubeAIResult
+  // request options
+  targetAudience   String?
+  hskLevel         String?
+  transcriptPolicy String?   // JSON: TranscriptPolicy
+  outputOptions    String?   // JSON: OutputOptions
+  limits           String?   // JSON: ImportJobLimits
+  // error
+  jobError         String?
+  errorCode        String?
+  // timing
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user             User                   @relation(fields: [userId], references: [id])
+  transcriptChunks MediaTranscriptChunk[]
+  savedContent     ImportedMediaContent?
+}
+
+model MediaTranscriptChunk {
+  id         String         @id @default(cuid())
+  jobId      String
+  chunkIndex Int
+  text       String
+  startSec   Float?
+  endSec     Float?
+  createdAt  DateTime       @default(now())
+
+  job        MediaImportJob @relation(fields: [jobId], references: [id])
+}
+
+model ImportedMediaContent {
+  id           String         @id @default(cuid())
+  jobId        String         @unique
+  saveAs       String         // lesson_material | lesson_plan_section | template | generated_item
+  courseId     String?
+  lessonId     String?
+  lessonPlanId String?
+  materialId   String?
+  content      String         // JSON: saved (possibly edited) ImportedYouTubeAIResult
+  savedAt      DateTime       @default(now())
+
+  job          MediaImportJob @relation(fields: [jobId], references: [id])
+}
+
+/**
+ * A reusable rubric describing how to grade a writing submission. Generated
+ * once during assignment setup (AI-assisted or manual), versioned, and
+ * referenced by WritingEvaluation rows. Re-evaluation does NOT regenerate the
+ * rubric — it snapshots and reuses it.
+ */
+model WritingRubric {
+  id              String   @id @default(cuid())
+  ownerId         String   // Teacher (User) who owns this rubric
+  courseId        String?
+  lessonId        String?
+  assignmentId    String?
+  hskLevel        String   // e.g. "HSK3"
+  targetAudience  String   // free-text target description
+  criteria        String   // JSON: { grammar, vocabulary, sentence_structure, ... }
+  deductionPolicy String   // JSON: { grammar: 25, vocabulary: 20, ... }
+  createdByAi     Boolean  @default(true)
+  aiProvider      String?
+  aiModel         String?
+  version         Int      @default(1)
+  status          String   @default("active") // 'active' | 'archived'
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner           User     @relation(fields: [ownerId], references: [id])
+  evaluations     WritingEvaluation[]
+}
+
+/**
+ * One evaluation pass over one Submission with one Rubric. Re-evaluation
+ * creates a NEW row (never overwrites): the new row's `previousEvaluationId`
+ * points back to the prior version, and `evaluationVersion` is incremented.
+ *
+ * `rubricSnapshot` captures the rubric state at evaluation time so future
+ * rubric edits don't retroactively change historical scores.
+ */
+model WritingEvaluation {
+  id                   String   @id @default(cuid())
+  submissionId         String
+  teacherId            String
+  rubricId             String
+  rubricSnapshot       String   // JSON: full rubric content captured at eval time
+  rubricSource         String   // e.g. "default" | "manual" | "ai-regen"
+  score100             Float
+  score10              Float
+  deductions           String   // JSON: per-criterion deductions
+  sentenceFeedback     String   // JSON: array of per-sentence feedback objects
+  overallSummary       String
+  teacherComment       String?
+  aiProvider           String?
+  aiModel              String?
+  evaluationVersion    Int      @default(1)
+  previousEvaluationId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  submission Submission    @relation(fields: [submissionId], references: [id])
+  rubric     WritingRubric @relation(fields: [rubricId], references: [id])
 }

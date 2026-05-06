@@ -1,0 +1,94 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e15]: 課
+        - generic [ref=e16]:
+          - generic [ref=e17]: 課意studio
+          - text: KeYi Studio
+      - navigation [ref=e18]:
+        - link "대시보드" [ref=e19] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e21]
+          - generic [ref=e26]: 대시보드
+        - link "내 강의실" [ref=e27] [cursor=pointer]:
+          - /url: /courses
+          - img [ref=e29]
+          - generic [ref=e31]: 내 강의실
+        - link "수강생 관리" [ref=e32] [cursor=pointer]:
+          - /url: /members
+          - img [ref=e34]
+          - generic [ref=e39]: 수강생 관리
+        - link "과제 및 평가" [ref=e40] [cursor=pointer]:
+          - /url: /assignments
+          - img [ref=e42]
+          - generic [ref=e45]: 과제 및 평가
+        - link "강의 계획서" [ref=e46] [cursor=pointer]:
+          - /url: /syllabi
+          - img [ref=e48]
+          - generic [ref=e51]: 강의 계획서
+        - generic [ref=e52]: 수업 자료 제작
+        - link "새 강좌 만들기" [ref=e53] [cursor=pointer]:
+          - /url: /courses/new
+          - img [ref=e54]
+          - text: 새 강좌 만들기
+        - link "YouTube AI 교재" [ref=e56] [cursor=pointer]:
+          - /url: /materials/import/youtube
+          - img [ref=e58]
+          - generic [ref=e62]: YouTube AI 교재
+      - generic [ref=e63]:
+        - generic [ref=e65]:
+          - button "한국어" [ref=e66] [cursor=pointer]
+          - button "English" [ref=e67] [cursor=pointer]
+        - link "계정 설정" [ref=e68] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e70]
+          - generic [ref=e73]: 계정 설정
+        - button "로그아웃" [ref=e74] [cursor=pointer]:
+          - img [ref=e75]
+          - generic [ref=e78]: 로그아웃
+    - main [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - heading "수업 관리" [level=1] [ref=e82]
+          - paragraph [ref=e83]: 선생님의 소중한 수업 자료와 강좌를 확인해 보세요.
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: wrong
+            - generic [ref=e87]: 정회원 계정
+          - generic [ref=e88]: WR
+      - generic [ref=e157]:
+        - generic [ref=e159]:
+          - generic [ref=e160]:
+            - link "대시보드" [ref=e161] [cursor=pointer]:
+              - /url: /dashboard
+            - img [ref=e162]
+            - 'link "기초 회화: 일상 중국어" [ref=e164] [cursor=pointer]':
+              - /url: /courses/cmori13th0003ck9ovaoagfyq/plan
+            - img [ref=e165]
+            - generic [ref=e167]: 강의 계획서
+          - heading "강의 계획서 미리보기" [level=1] [ref=e168]
+          - paragraph [ref=e169]: 선생님의 입력을 바탕으로 AI가 생성한 공식 문서입니다.
+        - generic [ref=e170]:
+          - button "인쇄하기" [ref=e171] [cursor=pointer]:
+            - img [ref=e172]
+            - text: 인쇄하기
+          - button "PDF 내보내기" [ref=e176] [cursor=pointer]:
+            - img [ref=e177]
+            - text: PDF 내보내기
+          - button "수정하기" [ref=e180] [cursor=pointer]:
+            - img [ref=e181]
+            - text: 수정하기
+        - generic [ref=e184]:
+          - 'heading "강의 계획서: 기초 회화: 일상 중국어" [level=1] [ref=e185]'
+          - heading "강좌 개요" [level=2] [ref=e186]
+          - paragraph [ref=e187]: HSK 1-2 수준의 기초 회화 중심 수업. 인사, 소개, 쇼핑, 음식 주문 등 실생활에서 바로 쓸 수 있는 표현을 배웁니다.
+          - heading "교육 목표" [level=2] [ref=e188]
+          - paragraph [ref=e189]: 일상적인 중국어 회화를 자신 있게 할 수 있으며, HSK 2급 수준의 어휘와 문법을 습득한다.
+          - heading "교수법" [level=2] [ref=e190]
+          - paragraph [ref=e191]: Communicative 접근 방식
+          - heading "평가 기준" [level=2] [ref=e192]
+          - paragraph [ref=e193]: 참여도 20%, 말하기 평가 40%, 최종 발표 40%
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e156]

@@ -5,6 +5,10 @@ export const translations = {
     common: {
       dashboard: '대시보드',
       myCourses: '내 강의실',
+      members: '수강생 관리',
+      assignments: '과제 및 평가',
+      youtubeImport: 'YouTube AI 교재',
+      memberType: '정회원 계정',
       syllabi: '강의 계획서',
       settings: '계정 설정',
       logout: '로그아웃',
@@ -34,7 +38,7 @@ export const translations = {
       feature2Title: '직관적인 블록 에디터',
       feature2Desc: '원하는 콘텐츠를 드래그 앤 드롭으로 배치하세요. 텍스트, 이미지, 퀴즈를 자유롭게 구성할 수 있습니다.',
       feature3Title: '중국어 특화 콘텐츠',
-      feature3Desc: '성조 연습, 한자 분석, 문화 비교 등 중국어 수업에 꼭 필요한 전용 블록을 제공합니다.',
+      feature3Desc: 'HSK 텍스트 분석과 유튜브 미디어 추출 등 중국어 수업에 꼭 필요한 전용 블록을 제공합니다.',
     },
 
     dashboard: {
@@ -52,7 +56,12 @@ export const translations = {
       updated: '최근 수정',
       lessons: '수업 차시',
       confirmDelete: '정말 이 강좌를 삭제하시겠습니까?',
+      deleteWarning: '이 작업은 취소할 수 없습니다. 해당 강좌의 모든 수업과 커리큘럼 데이터가 영구적으로 삭제됩니다.',
       deleteSuccess: '강좌가 삭제되었습니다.',
+      cancel: '취소',
+      delete: '삭제',
+      weeks: '주차',
+      progress: '진도율',
     },
     editor: {
       lessonEditor: '수업 자료 편집',
@@ -68,13 +77,20 @@ export const translations = {
         image: '이미지',
         video: '비디오',
         quiz: '인터랙티브 퀴즈',
-        tonePractice: '성조 연습',
-        charAnalysis: '한자 분석',
-        cultureComparison: '문화 비교',
-        subtitleAnalysis: '영상 자막 분석',
         textAnalyzer: 'HSK 텍스트 분석',
-        mediaImport: '실생활 미디어 추출',
-      }
+        youtubeExtract: '유튜브 미디어 추출',
+        youtubeLink: '유튜브 링크',
+      },
+      placeholders: {
+        heading: '제목을 입력하세요...',
+        text: '내용을 입력하세요...',
+        question: '질문을 입력하세요...',
+        option: '선택지를 입력하세요...',
+        caption: '캡션을 입력하세요...',
+      },
+      saving: '저장 중...',
+      savedDraft: '임시 저장 완료',
+      generatingPdf: 'PDF 생성 중...',
     },
     form: {
       assistant: 'AI 강의 설계 도우미',
@@ -112,6 +128,10 @@ export const translations = {
     common: {
       dashboard: 'Dashboard',
       myCourses: 'My Courses',
+      members: 'Members',
+      assignments: 'Assignments',
+      youtubeImport: 'YouTube AI Materials',
+      memberType: 'Full Member',
       syllabi: 'Syllabi',
       settings: 'Settings',
       logout: 'Log out',
@@ -172,7 +192,7 @@ export const translations = {
       feature2Title: 'Block-Based Editor',
       feature2Desc: 'Compose lessons with ease using a drag-and-drop block interface.',
       feature3Title: 'Chinese-Specific Blocks',
-      feature3Desc: 'Utilize specialized blocks for tone practice, character analysis, and HSK assessment.',
+      feature3Desc: 'Specialized blocks for HSK text analysis and YouTube media extraction tailored for Chinese teaching.',
     },
     dashboard: {
       welcome: 'Classroom Management',
@@ -189,7 +209,12 @@ export const translations = {
       updated: 'Updated',
       lessons: 'Lessons',
       confirmDelete: 'Are you sure you want to delete this course?',
+      deleteWarning: 'This action cannot be undone. All lessons and curriculum data for this course will be permanently deleted.',
       deleteSuccess: 'Course deleted successfully.',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      weeks: 'weeks',
+      progress: 'Progress',
     },
     editor: {
       lessonEditor: 'Lesson Editor',
@@ -205,11 +230,20 @@ export const translations = {
         image: 'Image',
         video: 'Video Embed',
         quiz: 'Interactive Quiz',
-        tonePractice: 'Tone Practice',
-        charAnalysis: 'Character Analysis',
-        cultureComparison: 'Culture Comparison',
-        subtitleAnalysis: 'Subtitle Analysis',
-      }
+        textAnalyzer: 'HSK Text Analyzer',
+        youtubeExtract: 'YouTube Media Extraction',
+        youtubeLink: 'YouTube Link',
+      },
+      placeholders: {
+        heading: 'Enter heading...',
+        text: 'Type something...',
+        question: 'Enter your question here...',
+        option: 'Enter option...',
+        caption: 'Add a caption...',
+      },
+      saving: 'Saving...',
+      savedDraft: 'Draft saved',
+      generatingPdf: 'Generating PDF...',
     }
   }
 };

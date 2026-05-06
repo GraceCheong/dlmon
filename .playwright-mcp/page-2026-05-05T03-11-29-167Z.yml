@@ -1,0 +1,191 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: 課
+        - generic [ref=e8]:
+          - generic [ref=e9]: 課意studio
+          - text: KeYi Studio
+      - navigation [ref=e10]:
+        - link "대시보드" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e13]
+          - generic [ref=e18]: 대시보드
+        - link "내 강의실" [ref=e19] [cursor=pointer]:
+          - /url: /courses
+          - img [ref=e21]
+          - generic [ref=e23]: 내 강의실
+        - link "수강생 관리" [ref=e24] [cursor=pointer]:
+          - /url: /members
+          - img [ref=e26]
+          - generic [ref=e31]: 수강생 관리
+        - link "과제 및 평가" [ref=e32] [cursor=pointer]:
+          - /url: /assignments
+          - img [ref=e34]
+          - generic [ref=e37]: 과제 및 평가
+        - link "강의 계획서" [ref=e38] [cursor=pointer]:
+          - /url: /syllabi
+          - img [ref=e40]
+          - generic [ref=e43]: 강의 계획서
+        - generic [ref=e44]: 수업 자료 제작
+        - link "새 강좌 만들기" [ref=e45] [cursor=pointer]:
+          - /url: /courses/new
+          - img [ref=e46]
+          - text: 새 강좌 만들기
+        - link "YouTube AI 교재" [ref=e48] [cursor=pointer]:
+          - /url: /materials/import/youtube
+          - img [ref=e50]
+          - generic [ref=e54]: YouTube AI 교재
+      - generic [ref=e55]:
+        - generic [ref=e57]:
+          - button "한국어" [ref=e58] [cursor=pointer]
+          - button "English" [ref=e59] [cursor=pointer]
+        - link "계정 설정" [ref=e60] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e62]
+          - generic [ref=e65]: 계정 설정
+        - button "로그아웃" [ref=e66] [cursor=pointer]:
+          - img [ref=e67]
+          - generic [ref=e70]: 로그아웃
+    - main [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "수업 관리" [level=1] [ref=e74]
+          - paragraph [ref=e75]: 선생님의 소중한 수업 자료와 강좌를 확인해 보세요.
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - generic [ref=e78]: wrong
+            - generic [ref=e79]: 정회원 계정
+          - generic [ref=e80]: WR
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - link [ref=e84] [cursor=pointer]:
+              - /url: /courses/cmori13th0003ck9ovaoagfyq/plan
+              - img [ref=e85]
+            - generic [ref=e87]:
+              - 'heading "2주차: 我的家人 가족 소개 (QA Test Edit)" [level=1] [ref=e88]'
+              - text: 수업 자료 편집
+            - generic [ref=e89]:
+              - img [ref=e90]
+              - text: AI ON
+          - generic [ref=e94]:
+            - button "미리보기" [ref=e95] [cursor=pointer]:
+              - img [ref=e96]
+              - text: 미리보기
+            - button "임시 저장" [ref=e99] [cursor=pointer]:
+              - img [ref=e100]
+              - text: 임시 저장
+            - button "PDF" [ref=e104] [cursor=pointer]:
+              - img [ref=e105]
+              - text: PDF
+            - button "배포하기" [ref=e108] [cursor=pointer]:
+              - img [ref=e109]
+              - text: 배포하기
+        - generic [ref=e113]:
+          - generic [ref=e115]:
+            - heading "블록 추가" [level=3] [ref=e116]
+            - button "제목" [ref=e117] [cursor=pointer]:
+              - img [ref=e118]
+              - generic [ref=e119]: 제목
+            - button "본문 텍스트" [ref=e120] [cursor=pointer]:
+              - img [ref=e121]
+              - generic [ref=e123]: 본문 텍스트
+            - button "이미지" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - generic [ref=e129]: 이미지
+            - button "비디오" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+              - generic [ref=e134]: 비디오
+            - button "인터랙티브 퀴즈" [ref=e135] [cursor=pointer]:
+              - img [ref=e136]
+              - generic [ref=e139]: 인터랙티브 퀴즈
+            - button "유튜브 링크" [ref=e140] [cursor=pointer]:
+              - img [ref=e141]
+              - generic [ref=e144]: 유튜브 링크
+            - heading "중국어 전용 블록" [level=3] [ref=e145]
+            - button "HSK 텍스트 분석" [ref=e146] [cursor=pointer]:
+              - img [ref=e147]
+              - generic [ref=e149]: HSK 텍스트 분석
+            - button "유튜브 미디어 추출" [ref=e150] [cursor=pointer]:
+              - img [ref=e151]
+              - generic [ref=e154]: 유튜브 미디어 추출
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e158]:
+                - button [ref=e159]:
+                  - img [ref=e160]
+                - generic [ref=e167]:
+                  - button [ref=e168] [cursor=pointer]:
+                    - img [ref=e169]
+                  - button [ref=e171] [cursor=pointer]:
+                    - img [ref=e172]
+                  - button [ref=e174] [cursor=pointer]:
+                    - img [ref=e175]
+                  - button [ref=e178] [cursor=pointer]:
+                    - img [ref=e179]
+                - textbox "제목을 입력하세요..." [ref=e183]: 가족 소개 - 제 1과
+              - generic [ref=e185]:
+                - button [ref=e186]:
+                  - img [ref=e187]
+                - generic [ref=e194]:
+                  - button [ref=e195] [cursor=pointer]:
+                    - img [ref=e196]
+                  - button [ref=e198] [cursor=pointer]:
+                    - img [ref=e199]
+                  - button [ref=e201] [cursor=pointer]:
+                    - img [ref=e202]
+                  - button [ref=e205] [cursor=pointer]:
+                    - img [ref=e206]
+                - textbox "내용을 입력하세요..." [ref=e210]
+              - generic [ref=e222]:
+                - button [ref=e223]:
+                  - img [ref=e224]
+                - generic [ref=e231]:
+                  - button [ref=e232] [cursor=pointer]:
+                    - img [ref=e233]
+                  - button [ref=e235] [cursor=pointer]:
+                    - img [ref=e236]
+                  - button [ref=e238] [cursor=pointer]:
+                    - img [ref=e239]
+                  - button [ref=e242] [cursor=pointer]:
+                    - img [ref=e243]
+                - generic [ref=e246]:
+                  - iframe [ref=e260]:
+                    - generic [active] [ref=f1e1]:
+                      - generic "YouTube 동영상 플레이어" [ref=f1e3]
+                      - generic [ref=f1e5]:
+                        - generic:
+                          - generic:
+                            - button "동영상 재생" [ref=f1e10] [cursor=pointer]
+                            - button "재생 컨트롤 숨기기" [ref=f1e12] [cursor=pointer]
+                            - generic [ref=f1e14]:
+                              - generic [ref=f1e19]:
+                                - generic [ref=f1e20]:
+                                  - link "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)" [ref=f1e21] [cursor=pointer]:
+                                    - /url: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+                                  - link "Rick Astley" [ref=f1e22] [cursor=pointer]:
+                                    - /url: /channel/UCuAXFkgsw1L7xaCfnd5JJOw
+                                    - generic [ref=f1e23]: Rick Astley
+                                - generic [ref=f1e24]:
+                                  - button [ref=f1e25] [cursor=pointer]
+                                  - generic [ref=f1e27]:
+                                    - generic: Rick Astley
+                                    - generic: 구독자 449만명
+                              - generic [ref=f1e28]:
+                                - button "공유" [ref=f1e31] [cursor=pointer]:
+                                  - generic [ref=f1e35]:
+                                    - img
+                                - link "YouTube에서 보기" [ref=f1e42] [cursor=pointer]:
+                                  - /url: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+                                  - generic [ref=f1e45]:
+                                    - text: "다음에서 보기:"
+                                    - img [ref=f1e47]:
+                                      - generic [ref=f1e49]:
+                                        - img
+                  - paragraph [ref=e252]: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+                  - button "변경" [ref=e261] [cursor=pointer]
+            - status [ref=e211]
+  - button "Open Next.js Dev Tools" [ref=e217] [cursor=pointer]:
+    - img [ref=e218]
+  - alert [ref=e3]

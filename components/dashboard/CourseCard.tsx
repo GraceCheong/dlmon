@@ -47,6 +47,8 @@ export default function CourseCard({ id, title, level, lessons, updated, publish
       });
       if (response.ok) {
         window.location.reload();
+      } else {
+        setDeleting(false);
       }
     } catch (error) {
       console.error('Failed to delete course:', error);
@@ -91,13 +93,13 @@ export default function CourseCard({ id, title, level, lessons, updated, publish
         
         <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', color: '#4A5568' }}>{title}</h3>
         <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', color: '#A0AEC0', marginBottom: '1.75rem', fontWeight: 500 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><BookOpen size={16} /> {lessons} 주차</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><BookOpen size={16} /> {lessons} {t.dashboard.weeks}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} /> {duration}</span>
         </div>
 
         <div style={{ marginBottom: '1.75rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.6rem', color: '#718096', fontWeight: 600 }}>
-            <span>진도율</span>
+            <span>{t.dashboard.progress}</span>
             <span style={{ color: 'var(--primary)' }}>{progress}%</span>
           </div>
           <div style={{ width: '100%', height: '10px', background: '#F1F5F9', borderRadius: '5px', overflow: 'hidden' }}>
@@ -153,22 +155,22 @@ export default function CourseCard({ id, title, level, lessons, updated, publish
             </div>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#4A5568', marginBottom: '0.75rem' }}>{t.dashboard.confirmDelete}</h3>
             <p style={{ color: '#718096', marginBottom: '2rem', lineHeight: 1.5 }}>
-              This action cannot be undone. All lessons and curriculum data for this course will be permanently removed.
+              {t.dashboard.deleteWarning}
             </p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                className="btn btn-secondary" 
-                style={{ flex: 1, padding: '0.875rem' }} 
+              <button
+                className="btn btn-secondary"
+                style={{ flex: 1, padding: '0.875rem' }}
                 onClick={() => setShowConfirm(false)}
               >
-                Cancel
+                {t.dashboard.cancel}
               </button>
-              <button 
-                className="btn" 
-                style={{ flex: 1, padding: '0.875rem', background: '#EF4444', color: 'white' }} 
+              <button
+                className="btn"
+                style={{ flex: 1, padding: '0.875rem', background: '#EF4444', color: 'white' }}
                 onClick={handleDiscard}
               >
-                Delete
+                {t.dashboard.delete}
               </button>
             </div>
           </div>
