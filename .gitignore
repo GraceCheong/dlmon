@@ -59,3 +59,11 @@ build_output*.txt
 .vscode/
 .claude/
 .playwright-mcp/
+
+# internal planning docs (not for public repo)
+docs/*
+!docs/coddbase-map.md
+!docs/UI_SCENARIOS.md
+
+# debug screenshots / dev artifacts
+editor-state.png

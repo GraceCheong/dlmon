@@ -121,4 +121,3 @@
 | `Submission.aiScore` / `Submission.aiFeedback` | Legacy display fields. |
 | `docker-compose.yml` | Legacy Postgres setup, current app uses SQLite. |
 | `scratch/` | Script-only workspace (seed scripts only). |
-| `i18n/` | Empty placeholder. |
