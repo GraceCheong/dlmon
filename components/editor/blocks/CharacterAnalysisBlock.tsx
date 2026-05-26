@@ -1,8 +1,7 @@
 'use client';
 
 import { useEditor } from '@/context/EditorContext';
-import { Type, Info, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { Type, Layers } from 'lucide-react';
 
 interface Component {
   char: string;

@@ -11,7 +11,7 @@ export default function PublicBlockList() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
       {blocks.map((block) => (
         <div key={block.id} style={{ marginBottom: '2rem' }}>
-          {renderBlock(block.type, { id: block.id, content: block.content })}
+          {renderBlock(block.type, { id: block.id, content: block.content, publicMode: true })}
         </div>
       ))}
     </div>

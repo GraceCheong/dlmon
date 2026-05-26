@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
-When you finish any work under the "I:\dev\dlmon", write and update the "Project Summary.md" file to log the work you did. Write the log like a GitHub commit message with its date and time.
+Keep `PROJECT_SUMMARY.md` as a current-state summary, not a chronological changelog. After meaningful work, update only essential feature outcomes: add new current facts, modify changed behavior, delete stale facts, and record useful verification/open risks. Do not append dated commit-style logs or file-by-file timelines.
 
 ---
 
@@ -21,7 +21,7 @@ node scratch/seed_test_data.js   # Seed a test teacher + sample courses
 
 There are no automated tests. Verify changes by running `npm run build` (TypeScript + route compilation) and manually checking affected pages via the dev server.
 
-**Test credentials:** `test@example.com` / `password`
+**Test credentials:** seeded `test@example.com` / `password`. Any-password test-user bypass requires `ALLOW_DEV_ANY_PASSWORD_FOR_TEST_USER=true` in development.
 
 ---
 
@@ -32,14 +32,14 @@ There are no automated tests. Verify changes by running `npm run build` (TypeScr
 - **Next.js 16** (App Router, Server Components, Route Handlers)
 - **SQLite + Prisma 6** (`engineType = "library"` — required by `next.config.ts` `serverExternalPackages`)
 - **NextAuth v4** (Credentials provider only; no OAuth in MVP)
-- **Vercel AI SDK v6** + local Ollama (`qwen3:30b` default) via OpenAI-compatible endpoint
+- **Vercel AI SDK v6** + local Ollama/OpenAI-compatible endpoint (`defaultModel` is currently `deepseek-r1:8b` in `lib/ai/client.ts`, overridable with `LOCAL_LLM_MODEL`)
 - **Tailwind CSS 4** + vanilla CSS modules
 
 ### Auth pattern
 
 Every API route handler must call `requireUserOrUnauthorized()` from `lib/auth-helpers.ts` and own-filter all DB queries by the returned `userId`. Server-component pages use `requireUserOrRedirect()` instead.
 
-`getCurrentUserId()` has a dev-only fallback: if no session exists, it returns the `test@example.com` user so the seeded dev environment works without logging in.
+`getCurrentUserId()` uses the session first. In local development only, explicit `TEST_USER_ID` can stand in for script-driven QA. Do not add implicit test-user, first-user, or unauthenticated fallbacks.
 
 ### AI client
 
@@ -51,7 +51,9 @@ Whisper STT for the import pipeline uses a separate model (`OLLAMA_STT_MODEL`) a
 
 State lives entirely in `context/EditorContext.tsx` (blocks array, add/update/remove/move, preview mode). `EditorCanvas.tsx` renders and reorders blocks via @dnd-kit. `BlockRegistry.tsx` maps block type strings to components.
 
-Active block types: `heading`, `text`, `image`, `video`, `quiz`, `youtube_link`, `text_analyzer`, `media_import`.
+Active block types: `heading`, `text`, `image`, `video`, `quiz`, `youtube-link`, `file-attachment`, `text-analyzer`, and `youtube-extract`.
+
+`media-import` remains as a backwards-compatible alias for old saved lesson blocks. Keep it until old rows are migrated.
 
 Four removed block files (`TonePracticeBlock`, `CharacterAnalysisBlock`, `SubtitleAnalysisBlock`, `CultureComparisonBlock`) still exist on disk — do not re-register them in BlockRegistry.
 
@@ -77,7 +79,7 @@ Several schema fields (`CurriculumPlan.data`, `LessonBlock.content`, `WritingRub
 
 UI language (Korean/English) is managed by `context/LanguageContext.tsx`. All UI strings must come from `lib/translations.ts` via `useLanguage()`. Do not hardcode Korean or English strings in components.
 
-Known gap: `MembersClient.tsx`, `AssignmentFormClient.tsx`, `ImportYouTubeClient.tsx`, and the assignments detail page have not yet been wired to `useLanguage`.
+Some older feature UIs still contain Korean literals. New or edited UI should route strings through `useLanguage()` and `lib/translations.ts`.
 
 ---
 

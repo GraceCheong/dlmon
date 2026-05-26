@@ -1,11 +1,11 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import { AUDIO_CHUNK_SECONDS } from './constants';
 import type { AudioProcessResult } from './types';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 /**
  * Normalize audio to 16 kHz mono WAV (required by Whisper).
@@ -23,10 +23,10 @@ export async function processAudio(
   const normalizedPath = path.join(jobDir, 'normalized.wav');
 
   // Step 1 — normalize: mono, 16 kHz, WAV
-  const normalizeCmd = `ffmpeg -y -i "${sourcePath}" -ac 1 -ar 16000 "${normalizedPath}"`;
-  console.log(`[audio-processing] normalize cmd: ${normalizeCmd}`);
+  const normalizeArgs = ['-y', '-i', sourcePath, '-ac', '1', '-ar', '16000', normalizedPath];
+  console.log(`[audio-processing] job=${jobId} normalize: ffmpeg ${normalizeArgs.join(' ')}`);
   try {
-    const { stderr } = await execAsync(normalizeCmd, { timeout: 10 * 60_000 });
+    const { stderr } = await execFileAsync('ffmpeg', normalizeArgs, { timeout: 10 * 60_000 });
     if (stderr) console.log(`[audio-processing] ffmpeg normalize stderr: ${stderr.slice(0, 300)}`);
   } catch (err) {
     console.error(`[audio-processing] ffmpeg normalize failed:`, err instanceof Error ? err.message : String(err));
@@ -39,18 +39,16 @@ export async function processAudio(
 
   // Step 2 — chunk: split into segments of AUDIO_CHUNK_SECONDS each
   const chunkPattern = path.join(jobDir, 'chunk_%03d.wav');
-  const chunkCmd = [
-    'ffmpeg',
-    `-i "${normalizedPath}"`,
-    '-f segment',
-    `-segment_time ${AUDIO_CHUNK_SECONDS}`,
-    '-c copy',
-    `"${chunkPattern}"`,
-  ].join(' ');
-
-  console.log(`[audio-processing] chunk cmd: ${chunkCmd}`);
+  const chunkArgs = [
+    '-i', normalizedPath,
+    '-f', 'segment',
+    '-segment_time', String(AUDIO_CHUNK_SECONDS),
+    '-c', 'copy',
+    chunkPattern,
+  ];
+  console.log(`[audio-processing] chunk: ffmpeg ${chunkArgs.join(' ')}`);
   try {
-    const { stderr } = await execAsync(chunkCmd, { timeout: 10 * 60_000 });
+    const { stderr } = await execFileAsync('ffmpeg', chunkArgs, { timeout: 10 * 60_000 });
     if (stderr) console.log(`[audio-processing] ffmpeg chunk stderr: ${stderr.slice(0, 300)}`);
   } catch (err) {
     console.error(`[audio-processing] ffmpeg chunk failed:`, err instanceof Error ? err.message : String(err));

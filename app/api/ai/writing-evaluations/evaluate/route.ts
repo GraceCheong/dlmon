@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateText } from 'ai';
-import { aiClient, defaultModel } from '@/lib/ai/client';
+import { cleanAiJsonResponse, isAiTimeoutError, writingAiTimeoutMs } from '@/lib/ai/client';
+import { generateAiText } from '@/lib/ai/generate';
 import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 import {
   buildEvaluationPrompt,
   normalizeEvaluationResult,
+  safeParseJson,
   DeductionPolicy,
   DEFAULT_DEDUCTION_POLICY,
 } from '@/lib/writing-evaluation';
@@ -82,9 +83,9 @@ export async function POST(request: Request) {
 
   // Parse the rubric's stored JSON strings.
   const criteriaDescription =
-    safeParse<Record<string, string>>(rubric.criteria) ?? {};
+    safeParseJson<Record<string, string>>(rubric.criteria) ?? {};
   const deductionPolicy =
-    safeParse<DeductionPolicy>(rubric.deductionPolicy) ?? DEFAULT_DEDUCTION_POLICY;
+    safeParseJson<DeductionPolicy>(rubric.deductionPolicy) ?? DEFAULT_DEDUCTION_POLICY;
   const rubricSnapshot = {
     id: rubric.id,
     hskLevel: rubric.hskLevel,
@@ -107,14 +108,20 @@ export async function POST(request: Request) {
 
   let aiRaw: unknown = null;
   try {
-    const { text } = await generateText({
-      model: aiClient(defaultModel),
-      prompt,
-    });
-    const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    aiRaw = JSON.parse(cleaned);
+    const text = await generateAiText({ prompt, userId, timeoutMs: writingAiTimeoutMs });
+    aiRaw = JSON.parse(cleanAiJsonResponse(text));
   } catch (e) {
     console.error('Evaluation AI call failed:', e);
+    if (isAiTimeoutError(e)) {
+      return NextResponse.json(
+        {
+          error: 'AI evaluation timed out',
+          detail: `Local LLM did not respond within ${writingAiTimeoutMs}ms.`,
+        },
+        { status: 504 },
+      );
+    }
+
     return NextResponse.json(
       { error: 'AI evaluation failed', detail: (e as Error).message },
       { status: 502 },
@@ -137,8 +144,8 @@ export async function POST(request: Request) {
         deductions: JSON.stringify(result.deductions),
         sentenceFeedback: JSON.stringify(result.sentenceFeedback),
         overallSummary: result.overallSummary,
-        aiProvider: 'local-openai-compatible',
-        aiModel: defaultModel,
+        aiProvider: 'ai',
+        aiModel: 'default',
         evaluationVersion: 1,
       },
     });
@@ -162,17 +169,9 @@ export async function POST(request: Request) {
     evaluation: {
       ...evaluation,
       rubricSnapshot,
+      criterionResults: result.criterionResults,
       deductions: result.deductions,
       sentenceFeedback: result.sentenceFeedback,
     },
   }, { status: 201 });
-}
-
-function safeParse<T>(s: string | null | undefined): T | null {
-  if (!s) return null;
-  try {
-    return JSON.parse(s) as T;
-  } catch {
-    return null;
-  }
 }

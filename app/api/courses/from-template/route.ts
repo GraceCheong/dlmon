@@ -1,20 +1,19 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { COURSE_TEMPLATES } from '@/lib/templates/courseTemplates';
+import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await requireUserOrUnauthorized();
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth;
 
     const { templateId } = await request.json();
     const template = COURSE_TEMPLATES.find(t => t.id === templateId);
     if (!template) return NextResponse.json({ error: 'Template not found' }, { status: 404 });
 
-    const userId = (session.user as any).id;
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + template.weeks * 7);
@@ -26,8 +25,8 @@ export async function POST(request: Request) {
       if (sample) return sample;
       return {
         week: w,
-        topic: `${w}주차 수업`,
-        objectives: `${template.titleKo} ${w}주차 학습 목표`,
+        topic: `${w}회차 수업`,
+        objectives: `${template.titleKo} ${w}회차 학습 목표`,
         activities: '강의 및 연습 활동',
         assessment: '주간 과제',
       };

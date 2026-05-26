@@ -1,8 +1,18 @@
 import prisma from '@/lib/prisma';
 import { notFound } from "next/navigation";
 import Link from 'next/link';
-import { ArrowLeft, Users, CheckCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { requireUserOrRedirect } from '@/lib/auth-helpers';
+import AssignmentDetailClient from '@/components/dashboard/AssignmentDetailClient';
+
+function parseJson<T>(value: string | null | undefined, fallback: T): T {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
+}
 
 export default async function AssignmentViewPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -14,24 +24,46 @@ export default async function AssignmentViewPage({ params }: { params: Promise<{
       lesson: {
         include: { course: true }
       },
+      attachments: {
+        include: {
+          uploadedFile: {
+            select: {
+              id: true,
+              originalName: true,
+              fileType: true,
+              fileSize: true,
+              conversionStatus: true,
+            },
+          },
+        },
+      },
       submissions: {
-        include: { member: true },
+        include: {
+          member: true,
+          evaluations: { orderBy: { evaluationVersion: 'desc' } },
+        },
         orderBy: { createdAt: 'desc' }
       }
     }
   });
 
-  if (!assignment) {
+  if (!assignment || assignment.lesson.course.userId !== userId) {
     notFound();
   }
 
   // Get all members associated with this teacher to see who hasn't submitted
   const allMembers = await prisma.member.findMany({
-    where: { userId }
+    where: { userId, deletedAt: null },
+    orderBy: { name: 'asc' },
   });
 
   const submittedMemberIds = assignment.submissions.map(s => s.memberId);
   const pendingMembers = allMembers.filter(m => !submittedMemberIds.includes(m.id));
+  const activeRubric = assignment.rubricId
+    ? await prisma.writingRubric.findFirst({
+      where: { id: assignment.rubricId, ownerId: userId },
+    })
+    : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -70,62 +102,88 @@ export default async function AssignmentViewPage({ params }: { params: Promise<{
           {assignment.prompt}
         </div>
         
-        <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#718096' }}>
-          <strong>학생용 공유 링크: </strong>
-          <code style={{ background: '#E2E8F0', padding: '0.2rem 0.5rem', borderRadius: '4px', userSelect: 'all' }}>
-            {process.env.NEXTAUTH_URL || 'http://localhost:3000'}/student/assignments/{assignment.id}
-          </code>
-        </div>
-      </div>
-
-      <div>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2D3748', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Users size={20} /> 학생 제출 현황
-        </h2>
-        
-        {assignment.submissions.length === 0 ? (
-          <div className="card" style={{ padding: '3rem', textAlign: 'center', color: '#A0AEC0' }}>
-            <p>아직 제출된 과제가 없습니다.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            {assignment.submissions.map(submission => (
-              <div key={submission.id} className="card" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
-                      {submission.member.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, color: '#2D3748' }}>{submission.member.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#718096' }}>{new Date(submission.createdAt).toLocaleString()}</div>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#F0FDF4', color: '#166534', padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', fontWeight: 700 }}>
-                    <CheckCircle size={16} /> AI 점수: {submission.aiScore} / 100
-                  </div>
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                  <div>
-                    <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#718096', marginBottom: '0.5rem' }}>제출 내용</h4>
-                    <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)', color: '#4A5568', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                      {submission.contentText}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#718096', marginBottom: '0.5rem' }}>AI 피드백</h4>
-                    <div style={{ background: '#FEF2F2', padding: '1rem', borderRadius: 'var(--radius-md)', color: '#991B1B', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                      {submission.aiFeedback}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {assignment.attachments.length > 0 && (
+          <div style={{ marginTop: '1.25rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#4A5568', marginBottom: '0.75rem' }}>첨부파일</h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {assignment.attachments.map(({ uploadedFile }) => (
+                <a
+                  key={uploadedFile.id}
+                  href={`/api/files/${uploadedFile.id}/download`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '0.55rem 0.75rem',
+                    color: '#4A5568',
+                    textDecoration: 'none',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {uploadedFile.originalName}
+                  <span style={{ color: '#A0AEC0', fontSize: '0.75rem' }}>
+                    {uploadedFile.fileType.toUpperCase()} · {uploadedFile.conversionStatus}
+                  </span>
+                </a>
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      <AssignmentDetailClient
+        assignment={{
+          id: assignment.id,
+          title: assignment.title,
+          prompt: assignment.prompt,
+          dueDate: assignment.dueDate ? assignment.dueDate.toISOString() : null,
+          type: assignment.type,
+          rubricId: assignment.rubricId,
+          hskLevel: assignment.hskLevel,
+          targetAudience: assignment.targetAudience,
+          rubric: activeRubric ? {
+            id: activeRubric.id,
+            hskLevel: activeRubric.hskLevel,
+            targetAudience: activeRubric.targetAudience,
+            criteria: parseJson<Record<string, string>>(activeRubric.criteria, {}),
+            deductionPolicy: parseJson<Record<string, number>>(activeRubric.deductionPolicy, {}),
+            createdByAi: activeRubric.createdByAi,
+            version: activeRubric.version,
+            status: activeRubric.status,
+          } : null,
+        }}
+        initialSubmissions={assignment.submissions.map((submission) => ({
+          id: submission.id,
+          memberId: submission.memberId,
+          memberName: submission.member.name,
+          contentText: submission.contentText,
+          aiScore: submission.aiScore,
+          aiFeedback: submission.aiFeedback,
+          createdAt: submission.createdAt.toISOString(),
+          evaluations: submission.evaluations.map((evaluation) => ({
+            id: evaluation.id,
+            score100: evaluation.score100,
+            score10: evaluation.score10,
+            overallSummary: evaluation.overallSummary,
+            teacherComment: evaluation.teacherComment,
+            deductions: parseJson(evaluation.deductions, []),
+            sentenceFeedback: parseJson(evaluation.sentenceFeedback, []),
+            rubricSnapshot: parseJson<Record<string, unknown> | null>(evaluation.rubricSnapshot, null),
+            evaluationVersion: evaluation.evaluationVersion,
+            createdAt: evaluation.createdAt.toISOString(),
+          })),
+        }))}
+        members={allMembers.map((member) => ({
+          id: member.id,
+          name: member.name,
+          className: member.className,
+        }))}
+        pendingMemberCount={pendingMembers.length}
+      />
     </div>
   );
 }

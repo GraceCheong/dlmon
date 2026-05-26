@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { ollamaGenerate, parseOllamaJSON, MODELS } from '@/lib/ollama';
+import { isAiTimeoutError, writingAiTimeoutMs } from '@/lib/ai/client';
+import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 
 export async function POST(request: Request) {
+  const auth = await requireUserOrUnauthorized();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const { lessonTitle, topic, objectives, courseLevel, language = 'ko' } = await request.json();
 
@@ -50,12 +55,19 @@ Respond ONLY with valid JSON:
       prompt,
       temperature: 0.8,
       jsonMode: true,
+      timeoutMs: writingAiTimeoutMs,
     });
 
     const parsed = parseOllamaJSON<{ blocks: unknown[] }>(result);
     return NextResponse.json(parsed);
   } catch (error) {
     console.error('Lesson generation error:', error);
+    if (isAiTimeoutError(error)) {
+      return NextResponse.json(
+        { error: 'AI lesson generation timed out', detail: `Local LLM did not respond within ${writingAiTimeoutMs}ms.` },
+        { status: 504 },
+      );
+    }
     return NextResponse.json({ error: 'Failed to generate lesson content' }, { status: 500 });
   }
 }

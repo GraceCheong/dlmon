@@ -4,10 +4,10 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, Copy, ChevronUp, ChevronDown } from 'lucide-react';
-import { useEditor } from '@/context/EditorContext';
+import { useEditor, Block } from '@/context/EditorContext';
 import { renderBlock } from './BlockRegistry';
 
-export default function SortableBlockWrapper({ id, block }: { id: string, block: any }) {
+export default function SortableBlockWrapper({ id, block }: { id: string, block: Block }) {
   const { isPreview } = useEditor();
   
   const { 
@@ -28,6 +28,8 @@ export default function SortableBlockWrapper({ id, block }: { id: string, block:
     zIndex: isDragging ? 10 : 1,
     position: 'relative' as const,
     marginBottom: isPreview ? '0' : '1rem',
+    width: isPreview ? '100%' : undefined,
+    maxWidth: isPreview ? '100%' : undefined,
   };
 
   return (
@@ -37,7 +39,8 @@ export default function SortableBlockWrapper({ id, block }: { id: string, block:
         position: 'relative', 
         border: isPreview ? 'none' : '1px solid var(--card-border)',
         boxShadow: isPreview ? 'none' : 'var(--card-shadow)',
-        background: isPreview ? 'transparent' : 'var(--card-bg)'
+        background: isPreview ? 'transparent' : 'var(--card-bg)',
+        width: '100%',
       }}>
         {/* Drag Handle */}
         {!isPreview && (
@@ -104,6 +107,7 @@ export default function SortableBlockWrapper({ id, block }: { id: string, block:
         }
         .preview-mode-card {
           margin-bottom: 2rem;
+          width: 100%;
         }
       `}</style>
     </div>

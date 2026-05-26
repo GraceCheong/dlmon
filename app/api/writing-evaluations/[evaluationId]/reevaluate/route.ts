@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateText } from 'ai';
-import { aiClient, defaultModel } from '@/lib/ai/client';
+import { aiClient, defaultModel, isAiTimeoutError, writingAiTimeoutMs } from '@/lib/ai/client';
 import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 import {
   buildEvaluationPrompt,
   normalizeEvaluationResult,
+  safeParseJson,
   DeductionPolicy,
   DEFAULT_DEDUCTION_POLICY,
 } from '@/lib/writing-evaluation';
@@ -68,8 +69,8 @@ export async function POST(
   let rubricSource: string;
 
   if (useCurrent) {
-    criteriaDescription = safeParse<Record<string, string>>(previous.rubric.criteria) ?? {};
-    deductionPolicy = safeParse<DeductionPolicy>(previous.rubric.deductionPolicy) ?? DEFAULT_DEDUCTION_POLICY;
+    criteriaDescription = safeParseJson<Record<string, string>>(previous.rubric.criteria) ?? {};
+    deductionPolicy = safeParseJson<DeductionPolicy>(previous.rubric.deductionPolicy) ?? DEFAULT_DEDUCTION_POLICY;
     rubricSnapshot = {
       id: previous.rubric.id,
       hskLevel: previous.rubric.hskLevel,
@@ -81,7 +82,7 @@ export async function POST(
     };
     rubricSource = 'ai-regen';
   } else {
-    const snap = safeParse<{
+    const snap = safeParseJson<{
       criteria?: Record<string, string>;
       deductionPolicy?: DeductionPolicy;
     }>(previous.rubricSnapshot);
@@ -106,11 +107,23 @@ export async function POST(
     const { text } = await generateText({
       model: aiClient(defaultModel),
       prompt,
+      maxRetries: 0,
+      timeout: writingAiTimeoutMs,
     });
     const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     aiRaw = JSON.parse(cleaned);
   } catch (e) {
     console.error('Re-evaluation AI call failed:', e);
+    if (isAiTimeoutError(e)) {
+      return NextResponse.json(
+        {
+          error: 'AI evaluation timed out',
+          detail: `Local LLM did not respond within ${writingAiTimeoutMs}ms.`,
+        },
+        { status: 504 },
+      );
+    }
+
     return NextResponse.json(
       { error: 'AI evaluation failed', detail: (e as Error).message },
       { status: 502 },
@@ -164,13 +177,4 @@ export async function POST(
       sentenceFeedback: result.sentenceFeedback,
     },
   }, { status: 201 });
-}
-
-function safeParse<T>(s: string | null | undefined): T | null {
-  if (!s) return null;
-  try {
-    return JSON.parse(s) as T;
-  } catch {
-    return null;
-  }
 }

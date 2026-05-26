@@ -4,11 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   BookOpen, 
-  Clock,
   ExternalLink,
   Trash2,
   Calendar,
-  MoreVertical
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -25,7 +23,7 @@ interface CourseCardProps {
   endDate?: string;
 }
 
-export default function CourseCard({ id, title, level, lessons, updated, published, progress, manageText, startDate, endDate }: CourseCardProps) {
+export default function CourseCard({ id, title, level, lessons, updated, progress, manageText, startDate, endDate }: CourseCardProps) {
   const { t, language } = useLanguage();
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);

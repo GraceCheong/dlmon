@@ -142,12 +142,12 @@ button {
 
 .input {
   width: 100%;
-  padding: 0.875rem 1.25rem;
+  padding: 0.6rem 0.875rem;
   background: #F8FAFC;
   border: 2px solid var(--input-border);
   border-radius: var(--radius-md);
   color: var(--foreground);
-  font-size: 1rem;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
 }
 

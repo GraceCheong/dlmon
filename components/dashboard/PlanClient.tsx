@@ -3,15 +3,17 @@
 import Link from 'next/link';
 import { ChevronRight, FileText } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import CurriculumEditor from '@/components/dashboard/CurriculumEditor';
+import CurriculumEditor, { CourseLessonSummary, UploadedFileOption, Week } from '@/components/dashboard/CurriculumEditor';
 
 interface PlanClientProps {
   courseId: string;
   courseTitle: string;
-  curriculum: any;
+  curriculum: Week[];
+  lessons: CourseLessonSummary[];
+  files: UploadedFileOption[];
 }
 
-export default function PlanClient({ courseId, courseTitle, curriculum }: PlanClientProps) {
+export default function PlanClient({ courseId, courseTitle, curriculum, lessons, files }: PlanClientProps) {
   const { t } = useLanguage();
 
   return (
@@ -31,7 +33,7 @@ export default function PlanClient({ courseId, courseTitle, curriculum }: PlanCl
         </Link>
       </div>
 
-      <CurriculumEditor courseId={courseId} initialData={curriculum} />
+      <CurriculumEditor courseId={courseId} initialData={curriculum} initialLessons={lessons} initialFiles={files} />
       
       <div style={{ height: '5rem' }} />
     </div>

@@ -1,4 +1,5 @@
 import { ollamaGenerate, parseOllamaJSON, MODELS } from '@/lib/ollama';
+import { defaultModel } from '@/lib/ai/client';
 import type { ImportedYouTubeAIResult, OutputOptions, TargetAudience, HskLevel } from './types';
 
 const TARGET_AUDIENCE_LABELS: Record<TargetAudience, string> = {
@@ -10,7 +11,7 @@ const TARGET_AUDIENCE_LABELS: Record<TargetAudience, string> = {
   business: '비즈니스 중국어 학습자',
 };
 
-const SYSTEM_PROMPT = `You are an expert Chinese language teacher and curriculum designer. Transform a YouTube transcript into structured Chinese learning materials for Korean-speaking teachers and students. Output valid JSON only. Do not use Markdown. Do not invent facts not supported by the transcript. Korean-facing explanations must be in Korean. Chinese examples must use Simplified Chinese. Match the requested HSK level when provided.`;
+const SYSTEM_PROMPT = `You are an expert Chinese language teacher and curriculum designer. Transform a YouTube transcript into structured Chinese learning materials for Korean-speaking teachers and students. Output valid JSON only. Do not use Markdown. Do not invent facts not supported by the transcript. Korean-facing explanations must be in Korean. Chinese examples must use Simplified Chinese. Match the requested HSK level when provided. Always extract and reconstruct the actual spoken dialogue from the transcript into the dialogScript field — identify speakers where possible, provide pinyin, and add Korean translations. The dialogScript is mandatory for all videos.`;
 
 function buildUserPrompt(args: {
   transcriptText: string;
@@ -59,6 +60,10 @@ Return only JSON matching exactly this structure:
     "vocabulary": [{"word":"","pinyin":"","meaning":"(Korean)","exampleSentence":"","hskLevel":""}],
     "keyExpressions": [{"expression":"","meaning":"(Korean)","usage":""}],
     "grammarPoints": [{"pattern":"","explanation":"(Korean)","examples":[""]}]
+  },
+  "dialogScript": {
+    "lines": [{"speaker":"(character name or A/B)","chinese":"(Chinese dialogue line)","pinyin":"(pinyin)","korean":"(Korean translation)"}],
+    "notesKo": "string — optional notes about the dialogue scene or context in Korean"
   },
   "classroomMaterials": {
     "comprehensionQuestions": [{"question":"(Korean)","answer":"(Korean)","difficulty":"easy|medium|hard"}],
@@ -111,6 +116,12 @@ function repairAIResult(raw: unknown): ImportedYouTubeAIResult {
       writingPrompts: Array.isArray(cm.writingPrompts) ? cm.writingPrompts as ImportedYouTubeAIResult['classroomMaterials']['writingPrompts'] : [],
       activities: Array.isArray(cm.activities) ? cm.activities as ImportedYouTubeAIResult['classroomMaterials']['activities'] : [],
     },
+    dialogScript: (() => {
+      const ds = r.dialogScript as Record<string, unknown> | null | undefined;
+      if (!ds) return undefined;
+      const lines = Array.isArray(ds.lines) ? ds.lines as NonNullable<ImportedYouTubeAIResult['dialogScript']>['lines'] : [];
+      return { lines, notesKo: typeof ds.notesKo === 'string' ? ds.notesKo : undefined };
+    })(),
     teacherNotes: {
       cautionNotesKo: typeof tn.cautionNotesKo === 'string' ? tn.cautionNotesKo : '',
       suggestedUsageKo: typeof tn.suggestedUsageKo === 'string' ? tn.suggestedUsageKo : '',
@@ -136,7 +147,9 @@ export async function generateImportedContent(args: {
   hskLevel?: HskLevel;
   outputOptions: OutputOptions;
 }): Promise<AIContentResult> {
-  const model = MODELS.quality; // qwen3:30b for best quality
+  // Use the configured default model (LOCAL_LLM_MODEL env var) so this works
+  // with whatever model the user has installed, not just qwen3:30b.
+  const model = defaultModel;
   const userPrompt = buildUserPrompt(args);
 
   const rawResponse = await ollamaGenerate({

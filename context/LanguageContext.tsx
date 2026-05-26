@@ -1,30 +1,52 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useSyncExternalStore } from 'react';
 import { Language, translations } from '@/lib/translations';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: any; // Type-safe translation accessor
+  t: (typeof translations)[Language];
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('ko');
+const DEFAULT_LANGUAGE: Language = 'ko';
+const LANGUAGE_STORAGE_KEY = 'letto-language';
+const LANGUAGE_CHANGE_EVENT = 'letto-language-change';
 
-  // Load preference from localStorage if available
-  useEffect(() => {
-    const savedLang = localStorage.getItem('letto-language') as Language;
-    if (savedLang && (savedLang === 'en' || savedLang === 'ko')) {
-      setLanguage(savedLang);
-    }
-  }, []);
+function readStoredLanguage(): Language {
+  if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
+  const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  return saved === 'en' || saved === 'ko' ? saved : DEFAULT_LANGUAGE;
+}
+
+function subscribeLanguage(callback: () => void) {
+  if (typeof window === 'undefined') return () => {};
+
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === LANGUAGE_STORAGE_KEY) callback();
+  };
+  const onLanguageChange = () => callback();
+
+  window.addEventListener('storage', onStorage);
+  window.addEventListener(LANGUAGE_CHANGE_EVENT, onLanguageChange);
+  return () => {
+    window.removeEventListener('storage', onStorage);
+    window.removeEventListener(LANGUAGE_CHANGE_EVENT, onLanguageChange);
+  };
+}
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const language = useSyncExternalStore(
+    subscribeLanguage,
+    readStoredLanguage,
+    () => DEFAULT_LANGUAGE,
+  );
 
   const handleSetLanguage = (lang: Language) => {
-    setLanguage(lang);
-    localStorage.setItem('letto-language', lang);
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    window.dispatchEvent(new Event(LANGUAGE_CHANGE_EVENT));
   };
 
   const t = translations[language];

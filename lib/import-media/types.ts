@@ -160,6 +160,13 @@ export interface ClassroomActivity {
   activityType?: string;
 }
 
+export interface DialogueLine {
+  speaker?: string;
+  chinese: string;
+  pinyin?: string;
+  korean: string;
+}
+
 export interface ImportedYouTubeAIResult {
   title: string;
   sourceSummary: {
@@ -179,6 +186,10 @@ export interface ImportedYouTubeAIResult {
     writingPrompts: WritingPrompt[];
     activities: ClassroomActivity[];
   };
+  dialogScript?: {
+    lines: DialogueLine[];
+    notesKo?: string;
+  };
   teacherNotes: {
     cautionNotesKo: string;
     suggestedUsageKo: string;
@@ -197,6 +208,7 @@ export interface JobStatusResponse {
   durationSeconds?: number;
   thumbnailUrl?: string;
   // transcript
+  transcriptText?: string;
   transcriptSource?: TranscriptSource;
   transcriptStatus?: TranscriptStatus;
   // audio — paths intentionally omitted

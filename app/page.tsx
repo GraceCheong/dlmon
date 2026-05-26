@@ -5,12 +5,9 @@ import Image from 'next/image';
 import styles from './page.module.css';
 import { useLanguage } from '@/context/LanguageContext';
 import { 
-  Sparkles, 
   BookOpen, 
   Layers, 
   Languages, 
-  Presentation, 
-  Globe,
   ChevronRight
 } from 'lucide-react';
 

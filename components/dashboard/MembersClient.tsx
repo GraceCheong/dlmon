@@ -2,23 +2,28 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlus, Mail, Search, Trash2, X, Loader2 } from 'lucide-react';
+import { UserPlus, Mail, Search, Trash2, X, Loader2, Users } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Member {
   id: string;
   name: string;
   email: string | null;
   role: string;
+  className: string | null;
+  metadata?: unknown;
   joinedAt: string;
 }
 
 export default function MembersClient({ initialMembers }: { initialMembers: Member[] }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [searchTerm, setSearchTerm] = useState('');
   const [showInvite, setShowInvite] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteClassName, setInviteClassName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
@@ -27,7 +32,10 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
     const q = searchTerm.trim().toLowerCase();
     if (!q) return members;
     return members.filter(
-      (m) => m.name.toLowerCase().includes(q) || (m.email ?? '').toLowerCase().includes(q),
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        (m.email ?? '').toLowerCase().includes(q) ||
+        (m.className ?? '').toLowerCase().includes(q),
     );
   }, [members, searchTerm]);
 
@@ -39,7 +47,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
       const res = await fetch('/api/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: inviteName, email: inviteEmail }),
+        body: JSON.stringify({ name: inviteName, email: inviteEmail, className: inviteClassName }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -49,6 +57,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
       setMembers((prev) => [data.member, ...prev]);
       setInviteName('');
       setInviteEmail('');
+      setInviteClassName('');
       setShowInvite(false);
       router.refresh();
     } catch {
@@ -82,9 +91,9 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#4A5568' }}>수강생 관리</h1>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#4A5568' }}>{t.members.title}</h1>
         <button className="btn btn-primary" onClick={() => setShowInvite(true)}>
-          <UserPlus size={20} /> 수강생 초대하기
+          <UserPlus size={20} /> {t.members.addButton}
         </button>
       </div>
 
@@ -103,7 +112,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
             />
             <input
               type="text"
-              placeholder="이름 또는 이메일로 검색..."
+              placeholder={t.members.searchPlaceholder}
               className="input"
               style={{ paddingLeft: '3rem' }}
               value={searchTerm}
@@ -115,20 +124,19 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ textAlign: 'left', background: '#F8FAFC' }}>
-              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>이름</th>
-              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>이메일</th>
-              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>역할</th>
-              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>가입일</th>
+              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>{t.members.table.name}</th>
+              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>{t.members.table.email}</th>
+              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>{t.members.table.class}</th>
+              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>{t.members.table.role}</th>
+              <th style={{ padding: '1rem 1.5rem', color: '#718096', fontSize: '0.85rem', fontWeight: 700 }}>{t.members.table.joined}</th>
               <th style={{ padding: '1rem 1.5rem' }}></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: '4rem', textAlign: 'center', color: '#A0AEC0' }}>
-                  {members.length === 0
-                    ? '아직 등록된 수강생이 없습니다. 첫 수강생을 초대해보세요.'
-                    : '검색 결과가 없습니다.'}
+                <td colSpan={6} style={{ padding: '4rem', textAlign: 'center', color: '#A0AEC0' }}>
+                  {members.length === 0 ? t.members.emptyNoMembers : t.members.emptyNoResults}
                 </td>
               </tr>
             )}
@@ -155,7 +163,8 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
                     <span style={{ fontWeight: 600, color: '#4A5568' }}>{member.name}</span>
                   </div>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem', color: '#718096', fontSize: '0.9rem' }}>{member.email}</td>
+                <td style={{ padding: '1.25rem 1.5rem', color: '#718096', fontSize: '0.9rem' }}>{member.email || '미입력'}</td>
+                <td style={{ padding: '1.25rem 1.5rem', color: '#718096', fontSize: '0.9rem' }}>{member.className || '-'}</td>
                 <td style={{ padding: '1.25rem 1.5rem' }}>
                   <span
                     style={{
@@ -167,7 +176,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
                       fontWeight: 700,
                     }}
                   >
-                    {member.role === 'student' ? '수강생' : member.role}
+                    {member.role === 'student' ? t.members.roleStudent : member.role}
                   </span>
                 </td>
                 <td style={{ padding: '1.25rem 1.5rem', color: '#A0AEC0', fontSize: '0.85rem' }}>
@@ -176,7 +185,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
                 <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
                   <button
                     onClick={() => {
-                      if (window.confirm(`${member.name} 학생을 삭제하시겠습니까?`)) {
+                      if (window.confirm(t.members.deleteConfirm.replace('{{name}}', member.name))) {
                         handleDelete(member.id);
                       }
                     }}
@@ -226,7 +235,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4A5568' }}>수강생 초대하기</h2>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4A5568' }}>{t.members.modal.title}</h2>
               <button
                 type="button"
                 onClick={() => setShowInvite(false)}
@@ -239,7 +248,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#718096', fontSize: '0.9rem' }}>
-                  이름
+                  {t.members.modal.labelName}
                 </label>
                 <input
                   type="text"
@@ -252,7 +261,7 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#718096', fontSize: '0.9rem' }}>
-                  이메일
+                  {t.members.modal.labelEmail}
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Mail
@@ -271,7 +280,31 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
                     style={{ paddingLeft: '3rem' }}
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#718096', fontSize: '0.9rem' }}>
+                  {t.members.modal.labelClass}
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Users
+                    size={18}
+                    style={{
+                      position: 'absolute',
+                      left: '1rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: '#CBD5E0',
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="input"
+                    style={{ paddingLeft: '3rem' }}
+                    value={inviteClassName}
+                    onChange={(e) => setInviteClassName(e.target.value)}
+                    placeholder={t.members.modal.classPlaceholder}
                   />
                 </div>
               </div>
@@ -299,10 +332,10 @@ export default function MembersClient({ initialMembers }: { initialMembers: Memb
                 onClick={() => setShowInvite(false)}
                 disabled={submitting}
               >
-                취소
+                {t.members.cancel}
               </button>
-              <button type="submit" className="btn btn-primary" disabled={submitting || !inviteName || !inviteEmail}>
-                {submitting ? <><Loader2 size={16} className="spin" /> 추가 중...</> : '초대'}
+              <button type="submit" className="btn btn-primary" disabled={submitting || !inviteName.trim()}>
+                {submitting ? <><Loader2 size={16} className="spin" /> {t.members.modal.submitting}</> : t.members.modal.submit}
               </button>
             </div>
           </form>

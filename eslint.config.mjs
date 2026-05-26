@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ad-hoc DB repair/seed scripts — CommonJS, not production code.
+    "scratch/**",
   ]),
 ]);
 

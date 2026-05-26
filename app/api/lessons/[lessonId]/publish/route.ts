@@ -1,18 +1,23 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ lessonId: string }> }
 ) {
+  const auth = await requireUserOrUnauthorized();
+  if (auth instanceof NextResponse) return auth;
+  const userId = auth;
   const { lessonId } = await params;
   
   try {
     const lesson = await prisma.lesson.findUnique({
-      where: { id: lessonId }
+      where: { id: lessonId },
+      include: { course: { select: { userId: true } } },
     });
 
-    if (!lesson) {
+    if (!lesson || lesson.course.userId !== userId) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
     }
 

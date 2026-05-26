@@ -31,6 +31,20 @@ npm run dev
 ```
 Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
+### 5. Run Production Server (Port 8080)
+Build and start the production server:
+```bash
+# bash / macOS / Linux
+npm run build
+PORT=8080 npm run start
+```
+```powershell
+# PowerShell (Windows)
+npm run build
+$env:PORT=8080; npm run start
+```
+Open **[http://localhost:8080](http://localhost:8080)** in your browser.
+
 ---
 
 ## 🔑 Testing Credentials

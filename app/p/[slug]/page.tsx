@@ -1,12 +1,17 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { EditorProvider } from '@/context/EditorContext';
-import { renderBlock } from '@/components/editor/BlockRegistry';
-import { Sparkles, Languages } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function PublicLessonPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  let slug = rawSlug;
+  try {
+    slug = decodeURIComponent(rawSlug);
+  } catch {
+    // Keep the raw segment if it is already decoded or malformed.
+  }
 
   const lesson = await prisma.lesson.findUnique({
     where: { slug },

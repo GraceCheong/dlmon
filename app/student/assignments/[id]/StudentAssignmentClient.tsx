@@ -1,19 +1,43 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, Loader2, Award, Clock, FileText, Sparkles } from 'lucide-react';
+import { AlertCircle, Download, Eye, Send, Loader2, Clock, FileText, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function StudentAssignmentClient({ assignment, member, existingSubmission }: { assignment: any, member: any, existingSubmission: any }) {
+interface AssignmentAttachment {
+  id: string;
+  originalName: string;
+  fileType: string;
+  fileSize: number;
+  conversionStatus: string;
+}
+
+interface Props {
+  assignment: {
+    id: string;
+    type: string;
+    title: string;
+    prompt: string;
+    dueDate?: string;
+    lesson: { title: string; course: { title: string } };
+    attachments: AssignmentAttachment[];
+  };
+  member: { id: string; name: string };
+  existingSubmission: { contentText: string; aiScore: number; aiFeedback: string } | null;
+}
+
+export default function StudentAssignmentClient({ assignment, member, existingSubmission }: Props) {
   const router = useRouter();
   const [content, setContent] = useState(existingSubmission?.contentText || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submission, setSubmission] = useState(existingSubmission);
+  const [submitError, setSubmitError] = useState('');
 
   const handleSubmit = async () => {
     if (!content.trim()) return;
 
     setIsSubmitting(true);
+    setSubmitError('');
     try {
       const response = await fetch('/api/ai/grade', {
         method: 'POST',
@@ -31,10 +55,15 @@ export default function StudentAssignmentClient({ assignment, member, existingSu
         setSubmission(data.submission);
         router.refresh();
       } else {
-        console.error('Failed to submit assignment');
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 409 && data.submission) {
+          setSubmission(data.submission);
+        }
+        setSubmitError(data.error || '과제 제출에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       }
     } catch (error) {
       console.error(error);
+      setSubmitError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -64,6 +93,53 @@ export default function StudentAssignmentClient({ assignment, member, existingSu
           <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#4A5568', marginBottom: '0.5rem' }}>선생님의 지시사항</h3>
           <p style={{ color: '#4A5568', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{assignment.prompt}</p>
         </div>
+
+        {assignment.attachments.length > 0 && (
+          <div style={{ marginTop: '1.25rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#4A5568', marginBottom: '0.75rem' }}>첨부파일</h3>
+            <div style={{ display: 'grid', gap: '0.6rem' }}>
+              {assignment.attachments.map((file) => {
+                const routeBase = `/api/public/assignments/${assignment.id}/files/${file.id}`;
+                const query = `memberId=${encodeURIComponent(member.id)}`;
+                const previewAvailable = file.fileType === 'pdf' || file.conversionStatus === 'done';
+                return (
+                  <div
+                    key={file.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '0.75rem',
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ color: '#2D3748', fontWeight: 800, fontSize: '0.9rem', overflowWrap: 'anywhere' }}>
+                        {file.originalName}
+                      </div>
+                      <div style={{ color: '#718096', fontSize: '0.78rem' }}>
+                        {file.fileType.toUpperCase()} · {Math.round(file.fileSize / 1024)} KB · {file.conversionStatus}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {previewAvailable && (
+                        <a className="btn btn-secondary" href={`${routeBase}/preview?${query}`} target="_blank" rel="noreferrer" style={{ padding: '0.45rem 0.7rem', fontSize: '0.82rem', textDecoration: 'none' }}>
+                          <Eye size={15} /> 미리보기
+                        </a>
+                      )}
+                      <a className="btn btn-secondary" href={`${routeBase}/download?${query}`} style={{ padding: '0.45rem 0.7rem', fontSize: '0.82rem', textDecoration: 'none' }}>
+                        <Download size={15} /> 다운로드
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {!submission ? (
@@ -80,6 +156,12 @@ export default function StudentAssignmentClient({ assignment, member, existingSu
             onChange={(e) => setContent(e.target.value)}
             style={{ minHeight: '250px', resize: 'vertical', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '1.5rem' }}
           />
+
+          {submitError && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: '#FEE2E2', color: '#991B1B', borderRadius: 'var(--radius-md)', padding: '0.75rem', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600 }}>
+              <AlertCircle size={17} /> {submitError}
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button 

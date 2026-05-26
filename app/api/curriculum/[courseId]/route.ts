@@ -5,9 +5,11 @@ import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 interface WeekInput {
   week: number;
   topic: string;
+  unit?: string;
   objectives: string;
   activities: string;
   assessment: string;
+  type?: 'lesson' | 'midterm' | 'final';
 }
 
 function isValidWeek(w: unknown): w is WeekInput {
@@ -18,7 +20,9 @@ function isValidWeek(w: unknown): w is WeekInput {
     typeof x.topic === 'string' &&
     typeof x.objectives === 'string' &&
     typeof x.activities === 'string' &&
-    typeof x.assessment === 'string'
+    typeof x.assessment === 'string' &&
+    (x.unit === undefined || typeof x.unit === 'string') &&
+    (x.type === undefined || x.type === 'lesson' || x.type === 'midterm' || x.type === 'final')
   );
 }
 

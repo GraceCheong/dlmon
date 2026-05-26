@@ -5,7 +5,7 @@ import type { SaveJobRequest } from '@/lib/import-media/types';
 
 export const runtime = 'nodejs';
 
-const VALID_SAVE_AS = new Set(['lesson_material', 'lesson_plan_section', 'template', 'generated_item']);
+const VALID_SAVE_AS = new Set(['lesson_material']);
 
 /**
  * POST /api/ai/import-media/jobs/:jobId/save
@@ -46,12 +46,34 @@ export async function POST(
 
   if (!saveAs || !VALID_SAVE_AS.has(saveAs)) {
     return NextResponse.json(
-      { error: '`saveAs` must be one of: lesson_material, lesson_plan_section, template, generated_item' },
+      { error: '`saveAs` must be lesson_material. Other targets are not wired to a UI yet.' },
       { status: 400 },
     );
   }
   if (!editedResult || typeof editedResult !== 'object') {
     return NextResponse.json({ error: '`editedResult` is required' }, { status: 400 });
+  }
+
+  if (lessonPlanId || materialId) {
+    return NextResponse.json(
+      { error: '`lessonPlanId` and `materialId` are not supported for lesson_material saves' },
+      { status: 400 },
+    );
+  }
+
+  if (!lessonId || !courseId) {
+    return NextResponse.json(
+      { error: '`courseId` and `lessonId` are required for lesson_material saves' },
+      { status: 400 },
+    );
+  }
+
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    include: { course: { select: { id: true, userId: true } } },
+  });
+  if (!lesson || lesson.course.userId !== userId || lesson.course.id !== courseId) {
+    return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
   }
 
   // Upsert: if teacher saves the same job again (re-save after edits), update the row.
@@ -60,18 +82,18 @@ export async function POST(
     create: {
       jobId,
       saveAs,
-      courseId: courseId ?? null,
-      lessonId: lessonId ?? null,
-      lessonPlanId: lessonPlanId ?? null,
-      materialId: materialId ?? null,
+      courseId,
+      lessonId,
+      lessonPlanId: null,
+      materialId: null,
       content: JSON.stringify(editedResult),
     },
     update: {
       saveAs,
-      courseId: courseId ?? null,
-      lessonId: lessonId ?? null,
-      lessonPlanId: lessonPlanId ?? null,
-      materialId: materialId ?? null,
+      courseId,
+      lessonId,
+      lessonPlanId: null,
+      materialId: null,
       content: JSON.stringify(editedResult),
       savedAt: new Date(),
     },

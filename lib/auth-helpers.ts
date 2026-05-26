@@ -4,24 +4,24 @@ import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 /**
- * Resolves the current user id from session, falling back to the seeded test
- * user when no session is present. This consolidates the auth-bypass pattern
- * that was previously duplicated across pages and API routes.
+ * Resolves the current user id from session. In local development only, an
+ * explicit TEST_USER_ID can be used for script-driven QA without opening a
+ * broad unauthenticated fallback.
  *
- * NOTE: The test-user fallback preserves existing behavior. To harden auth,
- * call `requireUserStrict()` instead, or remove the fallback branch here.
+ * Do not add implicit database fallbacks here. Every API that uses this helper
+ * inherits its behavior.
  */
 export async function getCurrentUserId(): Promise<string | null> {
   const session = await getServerSession(authOptions);
   const sessionId = session?.user ? (session.user as { id?: string }).id ?? null : null;
   if (sessionId) return sessionId;
 
-  // Dev-only fallback: use the seeded test user, otherwise any first user.
-  const testUser = await prisma.user.findUnique({ where: { email: 'test@example.com' } });
-  if (testUser) return testUser.id;
+  if (process.env.NODE_ENV === 'development' && process.env.TEST_USER_ID) {
+    const testUser = await prisma.user.findUnique({ where: { id: process.env.TEST_USER_ID } });
+    return testUser?.id ?? null;
+  }
 
-  const anyUser = await prisma.user.findFirst();
-  return anyUser?.id ?? null;
+  return null;
 }
 
 /**

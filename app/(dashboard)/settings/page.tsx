@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { User, Mail, Globe, Save, Sparkles, Loader2, Check } from 'lucide-react';
+import { User, Mail, Globe, Save, Sparkles, Loader2, Check, Cpu } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface Settings {
@@ -9,6 +9,7 @@ interface Settings {
   email: string;
   language: 'ko' | 'en';
   aiMode: boolean;
+  aiProvider: 'ollama' | 'claude-cli';
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS: Settings = {
   email: '',
   language: 'ko',
   aiMode: true,
+  aiProvider: 'ollama',
 };
 
 export default function SettingsPage() {
@@ -32,7 +34,7 @@ export default function SettingsPage() {
     (async () => {
       try {
         const res = await fetch('/api/settings');
-        if (!res.ok) throw new Error('load failed');
+        if (!res.ok) throw new Error('load_failed');
         const data = await res.json();
         if (cancelled) return;
         setSettings({
@@ -40,11 +42,12 @@ export default function SettingsPage() {
           email: data.settings.email ?? '',
           language: data.settings.language === 'en' ? 'en' : 'ko',
           aiMode: !!data.settings.aiMode,
+          aiProvider: data.settings.aiProvider === 'claude-cli' ? 'claude-cli' : 'ollama',
         });
         // Sync the LanguageContext with the persisted preference.
         setLanguage(data.settings.language === 'en' ? 'en' : 'ko');
-      } catch (e) {
-        if (!cancelled) setError('설정을 불러오지 못했습니다.');
+      } catch {
+        if (!cancelled) setError('loadError');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -71,14 +74,14 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || '저장에 실패했습니다.');
+        setError(data.error || t.settingsPage.saveError);
         return;
       }
       setLanguage(settings.language);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 2500);
     } catch {
-      setError('네트워크 오류로 저장에 실패했습니다.');
+      setError(t.settingsPage.networkError);
     } finally {
       setSaving(false);
     }
@@ -87,7 +90,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div style={{ padding: '4rem', textAlign: 'center', color: '#A0AEC0' }}>
-        <Loader2 size={28} className="spin" /> 설정을 불러오는 중...
+        <Loader2 size={28} className="spin" /> {t.settingsPage.loading}
         <style jsx>{`
           .spin { animation: spin 1s linear infinite; }
           @keyframes spin { to { transform: rotate(360deg); } }
@@ -100,7 +103,7 @@ export default function SettingsPage() {
     <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       <div>
         <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.75rem', color: '#4A5568' }}>{t.common.settings}</h1>
-        <p style={{ color: '#A0AEC0', fontSize: '1rem' }}>계정 정보와 스튜디오 환경을 선생님의 취향에 맞게 설정하세요.</p>
+        <p style={{ color: '#A0AEC0', fontSize: '1rem' }}>{t.settingsPage.subtitle}</p>
       </div>
 
       {/* Profile */}
@@ -109,12 +112,12 @@ export default function SettingsPage() {
           <div style={{ background: 'var(--primary-light)', padding: '0.6rem', borderRadius: '1rem', color: 'var(--primary)' }}>
             <User size={24} />
           </div>
-          프로필 정보
+          {t.settingsPage.profileSection}
         </h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
           <div>
-            <label className="label">이름</label>
+            <label className="label">{t.settingsPage.labelName}</label>
             <div style={{ position: 'relative' }}>
               <User size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#CBD5E0' }} />
               <input
@@ -127,7 +130,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="label">이메일 주소</label>
+            <label className="label">{t.settingsPage.labelEmail}</label>
             <div style={{ position: 'relative' }}>
               <Mail size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#CBD5E0' }} />
               <input
@@ -148,12 +151,12 @@ export default function SettingsPage() {
           <div style={{ background: 'var(--secondary-hover)15', padding: '0.6rem', borderRadius: '1rem', color: 'var(--secondary-hover)' }}>
             <Globe size={24} />
           </div>
-          사용자 취향 설정
+          {t.settingsPage.preferencesSection}
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
-            <label className="label">스튜디오 언어</label>
+            <label className="label">{t.settingsPage.labelLanguage}</label>
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button
                 type="button"
@@ -202,8 +205,8 @@ export default function SettingsPage() {
                 <Sparkles size={24} />
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>AI 강의 도우미 모드</div>
-                <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>커리큘럼 설계 시 고급 AI 기능을 활용합니다.</div>
+                <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>{t.settingsPage.aiModeTitle}</div>
+                <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>{t.settingsPage.aiModeDesc}</div>
               </div>
             </div>
             <label className="switch">
@@ -215,19 +218,51 @@ export default function SettingsPage() {
               <span className="slider round"></span>
             </label>
           </div>
+
+          {/* AI Provider selector */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <Cpu size={18} style={{ color: '#718096' }} />
+              <span className="label" style={{ margin: 0 }}>{t.settingsPage.aiProviderTitle}</span>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: '#A0AEC0', marginBottom: '0.75rem' }}>{t.settingsPage.aiProviderDesc}</p>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              {(['ollama', 'claude-cli'] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => update('aiProvider', p)}
+                  style={{
+                    flex: 1,
+                    padding: '0.9rem 1rem',
+                    borderRadius: 'var(--radius-lg)',
+                    border: settings.aiProvider === p ? '2px solid var(--primary)' : '2px solid #E2E8F0',
+                    background: settings.aiProvider === p ? 'var(--primary-light)' : '#F8FAFC',
+                    color: settings.aiProvider === p ? 'var(--primary-hover)' : '#718096',
+                    fontWeight: settings.aiProvider === p ? 800 : 500,
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {p === 'ollama' ? t.settingsPage.aiProviderOllama : t.settingsPage.aiProviderClaude}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {error && (
         <div style={{ background: '#FEF2F2', color: '#991B1B', padding: '1rem 1.5rem', borderRadius: '1rem', fontWeight: 600 }}>
-          {error}
+          {error === 'loadError' ? t.settingsPage.loadError : error}
         </div>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginBottom: '4rem' }}>
         {savedFlash && (
           <span style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700 }}>
-            <Check size={18} /> 저장되었습니다
+            <Check size={18} /> {t.settingsPage.saved}
           </span>
         )}
         <button
@@ -236,7 +271,7 @@ export default function SettingsPage() {
           disabled={saving}
           style={{ padding: '1rem 3rem', fontSize: '1.1rem' }}
         >
-          {saving ? <><Loader2 size={20} className="spin" /> 저장 중...</> : <><Save size={20} /> 설정 저장하기</>}
+          {saving ? <><Loader2 size={20} className="spin" /> {t.settingsPage.saving}</> : <><Save size={20} /> {t.settingsPage.saveButton}</>}
         </button>
       </div>
 

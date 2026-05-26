@@ -1,30 +1,14 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import type { YouTubeMetadata } from './types';
+import { execYtDlp } from './yt-dlp';
+import { parseYouTubeUrl } from '@/lib/youtube-url';
 
-const execAsync = promisify(exec);
-
-const YT_PATTERNS = [
-  /(?:youtube\.com\/watch\?.*v=|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
-];
-
-export function extractVideoId(url: string): string | null {
-  for (const pattern of YT_PATTERNS) {
-    const match = url.match(pattern);
-    if (match?.[1]) return match[1];
-  }
-  return null;
-}
-
-export function isYouTubeUrl(url: string): boolean {
-  return extractVideoId(url) !== null;
-}
+export { isYouTubeUrl, extractVideoId } from '@/lib/youtube-url';
 
 export async function fetchYouTubeMetadata(url: string): Promise<YouTubeMetadata> {
-  const videoId = extractVideoId(url);
-  if (!videoId) throw new Error('유효한 YouTube URL이 아닙니다.');
+  const parsed = parseYouTubeUrl(url);
+  if (!parsed) throw new Error('유효한 YouTube URL이 아닙니다. 일반 YouTube 링크, Shorts, youtu.be 링크를 지원합니다.');
 
-  const originalUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const { videoId, canonicalUrl: originalUrl } = parsed;
   const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
   // Use yt-dlp --dump-json to get metadata without downloading
@@ -33,8 +17,9 @@ export async function fetchYouTubeMetadata(url: string): Promise<YouTubeMetadata
   let durationSeconds: number | undefined;
 
   try {
-    const cmd = `yt-dlp --dump-json --no-playlist --skip-download "${originalUrl}"`;
-    const { stdout } = await execAsync(cmd, { timeout: 30_000 });
+    const { stdout } = await execYtDlp(['--dump-json', '--no-playlist', '--skip-download', parsed.canonicalUrl], {
+      timeout: 30_000,
+    });
     const info = JSON.parse(stdout.trim());
     title = info.title ?? undefined;
     channelName = info.uploader ?? info.channel ?? undefined;

@@ -12,10 +12,9 @@ interface CreateSubmissionBody {
 /**
  * POST /api/writing-submissions
  *
- * Teacher-side submission creation. The teacher enters the student's writing
- * directly (per MVP scope — student portal expansion is "Later"). Returns the
- * persisted Submission. The submission is NOT auto-evaluated; the teacher
- * triggers /api/ai/writing-evaluations/evaluate when ready.
+ * Teacher-side submission creation for real student records. The teacher enters
+ * the student's writing directly. The submission is NOT auto-evaluated; the
+ * teacher triggers /api/ai/writing-evaluations/evaluate when ready.
  *
  * Ownership: assignment → lesson → course → user; member → user.
  */
@@ -47,7 +46,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
   }
 
-  // Verify ownership of the member.
   const member = await prisma.member.findUnique({ where: { id: body.memberId } });
   if (!member || member.userId !== userId || member.deletedAt) {
     return NextResponse.json({ error: 'Member not found' }, { status: 404 });
@@ -68,10 +66,20 @@ export async function POST(request: Request) {
   const submission = await prisma.submission.create({
     data: {
       assignmentId: body.assignmentId,
-      memberId: body.memberId,
+      memberId: member.id,
       contentText: body.contentText,
       status: 'pending',
       rubricId,
+    },
+    include: {
+      member: {
+        select: {
+          id: true,
+          name: true,
+          className: true,
+          role: true,
+        },
+      },
     },
   });
 

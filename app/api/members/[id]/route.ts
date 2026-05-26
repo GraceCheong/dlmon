@@ -12,26 +12,43 @@ export async function PATCH(
   const { id } = await params;
 
   const member = await prisma.member.findUnique({ where: { id } });
-  if (!member || member.userId !== userId) {
+  if (!member || member.userId !== userId || member.deletedAt) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  let body: { name?: string; email?: string; role?: string };
+  let body: { name?: string; email?: string | null; role?: string; className?: string | null; metadata?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const data: Record<string, string> = {};
+  const data: {
+    name?: string;
+    email?: string | null;
+    role?: string;
+    className?: string | null;
+    metadata?: string | null;
+  } = {};
   if (typeof body.name === 'string' && body.name.trim()) data.name = body.name.trim();
-  if (typeof body.email === 'string' && body.email.trim()) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim())) {
+  if ('email' in body) {
+    const email = typeof body.email === 'string' ? body.email.trim() : '';
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
-    data.email = body.email.trim();
+    data.email = email || null;
   }
   if (typeof body.role === 'string' && body.role.trim()) data.role = body.role.trim();
+  if ('className' in body) {
+    data.className = typeof body.className === 'string' && body.className.trim()
+      ? body.className.trim()
+      : null;
+  }
+  if ('metadata' in body) {
+    data.metadata = body.metadata === undefined || body.metadata === null || body.metadata === ''
+      ? null
+      : JSON.stringify(body.metadata);
+  }
 
   const updated = await prisma.member.update({ where: { id }, data });
   return NextResponse.json({ member: updated });
@@ -47,24 +64,23 @@ export async function DELETE(
   const { id } = await params;
 
   const member = await prisma.member.findUnique({ where: { id } });
-  if (!member || member.userId !== userId) {
+  if (!member || member.userId !== userId || member.deletedAt) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  // Block deletion when the member already has graded submissions, to avoid losing
-  // historical grading data with no UI to recover it.
-  const submissionCount = await prisma.submission.count({ where: { memberId: id } });
-  if (submissionCount > 0) {
+  const activeSubmissions = await prisma.submission.count({
+    where: {
+      memberId: id,
+      status: { not: 'draft' },
+    },
+  });
+  if (activeSubmissions > 0) {
     return NextResponse.json(
-      {
-        error:
-          'Cannot remove a member with submitted work. Archive their submissions first.',
-        submissionCount,
-      },
+      { error: 'Cannot delete member with active submissions' },
       { status: 409 },
     );
   }
 
-  await prisma.member.delete({ where: { id } });
+  await prisma.member.update({ where: { id }, data: { deletedAt: new Date() } });
   return NextResponse.json({ ok: true });
 }

@@ -19,7 +19,7 @@ import {
 import { useEditor } from '@/context/EditorContext';
 import { useLanguage } from '@/context/LanguageContext';
 import SortableBlockWrapper from './SortableBlockWrapper';
-import { Plus, Type, Image as ImageIcon, Video, HelpCircle, Heading, BookOpen, PlayCircle, Link as LinkIcon } from 'lucide-react';
+import { Plus, Type, Image as ImageIcon, Video, HelpCircle, Heading, BookOpen, PlayCircle, Link as LinkIcon, Paperclip } from 'lucide-react';
 
 export default function EditorCanvas() {
   const { t } = useLanguage();
@@ -47,7 +47,17 @@ export default function EditorCanvas() {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '2rem', maxWidth: isPreview ? '800px' : '1200px', margin: '0 auto', transition: 'max-width 0.3s ease' }}>
+    <div
+      style={{
+        display: 'flex',
+        gap: '2rem',
+        width: '100%',
+        maxWidth: isPreview ? '800px' : '1200px',
+        margin: '0 auto',
+        padding: isPreview ? '0 1.5rem' : 0,
+        transition: 'max-width 0.3s ease',
+      }}
+    >
       {/* Block Palette (Sidebar) */}
       {!isPreview && (
         <div style={{ width: '240px', position: 'sticky', top: '2rem', height: 'fit-content' }}>
@@ -82,7 +92,12 @@ export default function EditorCanvas() {
             <BlockAddButton
               onClick={() => addBlock('youtube-link', { url: '', videoId: '', originalUrl: '', thumbnailStatus: 'unavailable' })}
               icon={<LinkIcon size={18} />}
-              label={t.editor.blocks.youtubeLink || '유튜브 링크'}
+              label={t.editor.blocks.youtubeLink}
+            />
+            <BlockAddButton
+              onClick={() => addBlock('file-attachment', {})}
+              icon={<Paperclip size={18} />}
+              label={t.editor.blocks.fileAttachment}
             />
 
             <h3 style={{ fontSize: '0.75rem', color: '#A0AEC0', textTransform: 'uppercase', marginBottom: '0.5rem', marginTop: '1.5rem', fontWeight: 800, letterSpacing: '0.1em' }}>{t.editor.chineseEducation}</h3>
@@ -90,19 +105,19 @@ export default function EditorCanvas() {
             <BlockAddButton
               onClick={() => addBlock('text-analyzer', { rawText: '' })}
               icon={<BookOpen size={18} />}
-              label={t.editor.blocks.textAnalyzer || 'HSK 텍스트 분석'}
+              label={t.editor.blocks.textAnalyzer}
             />
             <BlockAddButton
               onClick={() => addBlock('youtube-extract', { url: '' })}
               icon={<PlayCircle size={18} />}
-              label={t.editor.blocks.youtubeExtract || '유튜브 미디어 추출'}
+              label={t.editor.blocks.youtubeExtract}
             />
           </div>
         </div>
       )}
 
       {/* The Canvas */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -113,7 +128,17 @@ export default function EditorCanvas() {
             strategy={verticalListSortingStrategy}
             disabled={isPreview}
           >
-            <div id="editor-canvas-content" style={{ minHeight: '600px', paddingBottom: '10rem' }}>
+            <div
+              id="editor-canvas-content"
+              style={{
+                minHeight: '600px',
+                paddingBottom: '10rem',
+                width: '100%',
+                display: isPreview ? 'flex' : 'block',
+                flexDirection: isPreview ? 'column' : undefined,
+                alignItems: isPreview ? 'center' : undefined,
+              }}
+            >
               {blocks.length === 0 ? (
                 <div style={{ 
                   height: '300px', 

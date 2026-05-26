@@ -8,7 +8,7 @@ export async function GET() {
   const userId = auth;
 
   const members = await prisma.member.findMany({
-    where: { userId },
+    where: { userId, deletedAt: null },
     orderBy: { joinedAt: 'desc' },
   });
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (auth instanceof NextResponse) return auth;
   const userId = auth;
 
-  let body: { name?: string; email?: string; role?: string };
+  let body: { name?: string; email?: string; role?: string; className?: string; metadata?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -28,19 +28,25 @@ export async function POST(request: Request) {
   }
 
   const name = body.name?.trim();
-  const email = body.email?.trim();
+  const email = body.email?.trim() || null;
   const role = body.role?.trim() || 'student';
+  const className = body.className?.trim() || null;
+  const metadata = body.metadata === undefined || body.metadata === null || body.metadata === ''
+    ? null
+    : JSON.stringify(body.metadata);
 
-  if (!name || !email) {
-    return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
+  if (!name) {
+    return NextResponse.json({ error: 'Name is required' }, { status: 400 });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
   }
 
   // Disallow duplicate (userId, email) pairs — same teacher inviting same email twice.
-  const existing = await prisma.member.findFirst({ where: { userId, email } });
-  if (existing) {
+  const existing = email
+    ? await prisma.member.findFirst({ where: { userId, email, deletedAt: null } })
+    : null;
+  if (email && existing) {
     return NextResponse.json(
       { error: 'A member with that email is already enrolled with you' },
       { status: 409 },
@@ -48,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   const member = await prisma.member.create({
-    data: { name, email, role, userId },
+    data: { name, email, role, className, metadata, userId },
   });
 
   return NextResponse.json({ member }, { status: 201 });

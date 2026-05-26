@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { after } from 'next/server';
-import { isYouTubeUrl } from '@/lib/youtube';
-import { isYouTubeUrl as isYTUrl } from '@/lib/import-media/youtube-metadata';
+import { isYouTubeUrl } from '@/lib/youtube-url';
 import { fetchYouTubeMetadata } from '@/lib/import-media/youtube-metadata';
 import { fetchYouTubeTranscript } from '@/lib/import-media/youtube-transcript';
 import { downloadYouTubeAudio } from '@/lib/import-media/audio-download';
@@ -13,6 +12,7 @@ import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 import prisma from '@/lib/prisma';
 import { processImportJob } from '@/lib/import-media/job-processor';
 import type { CreateImportJobRequest } from '@/lib/import-media/types';
+import { MAX_AUDIO_DURATION_MINUTES } from '@/lib/import-media/constants';
 
 // Node.js runtime required: yt-dlp (child_process), fs, path
 export const runtime = 'nodejs';
@@ -31,11 +31,28 @@ async function handleNewJobRequest(
   if (!url || typeof url !== 'string') {
     return NextResponse.json({ error: '`url` is required' }, { status: 400 });
   }
-  if (!isYTUrl(url)) {
-    return NextResponse.json({ error: '유효한 YouTube URL이 아닙니다.' }, { status: 400 });
+  if (!isYouTubeUrl(url)) {
+    return NextResponse.json(
+      { error: '유효한 YouTube URL이 아닙니다. 일반 YouTube 링크, Shorts, youtu.be 링크를 지원합니다.' },
+      { status: 400 },
+    );
   }
   if (!targetAudience) {
     return NextResponse.json({ error: '`targetAudience` is required' }, { status: 400 });
+  }
+
+  const metadata = await fetchYouTubeMetadata(url);
+  const maxDurationSeconds = MAX_AUDIO_DURATION_MINUTES * 60;
+  if (metadata.durationSeconds && metadata.durationSeconds > maxDurationSeconds) {
+    return NextResponse.json(
+      {
+        error: 'VIDEO_TOO_LONG',
+        message: `유튜브 영상은 최대 ${MAX_AUDIO_DURATION_MINUTES}분까지 가져올 수 있습니다.`,
+        maxDurationSeconds,
+        actualDurationSeconds: metadata.durationSeconds,
+      },
+      { status: 400 },
+    );
   }
 
   const job = await prisma.mediaImportJob.create({
@@ -44,6 +61,11 @@ async function handleNewJobRequest(
       status: 'queued',
       sourceType,
       sourceUrl: url,
+      videoId: metadata.videoId,
+      videoTitle: metadata.title ?? null,
+      channelName: metadata.channelName ?? null,
+      durationSeconds: metadata.durationSeconds ?? null,
+      thumbnailUrl: metadata.thumbnailUrl ?? null,
       targetAudience,
       hskLevel: hskLevel ?? null,
       transcriptPolicy: JSON.stringify(
@@ -113,6 +135,16 @@ async function handleLegacyRequest(url: string): Promise<NextResponse> {
     console.log(`[legacy] [1] fetching metadata for ${url}`);
     const metadata = await fetchYouTubeMetadata(url);
     console.log(`[legacy] metadata: title="${metadata.title}" duration=${metadata.durationSeconds}s`);
+    const maxDurationSeconds = MAX_AUDIO_DURATION_MINUTES * 60;
+    if (metadata.durationSeconds && metadata.durationSeconds > maxDurationSeconds) {
+      return NextResponse.json(
+        {
+          error: 'VIDEO_TOO_LONG',
+          message: `유튜브 영상은 최대 ${MAX_AUDIO_DURATION_MINUTES}분까지 가져올 수 있습니다.`,
+        },
+        { status: 400 },
+      );
+    }
 
     // ── 2. Try YouTube captions ────────────────────────────────────────────────
     console.log(`[legacy] [2] fetching YouTube captions`);
@@ -245,14 +277,18 @@ async function handleLegacyRequest(url: string): Promise<NextResponse> {
 // ─── Main handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
+  // Auth required for both job formats — the legacy path triggers expensive
+  // yt-dlp, STT, and LLM work and must not be callable without a session.
+  const auth = await requireUserOrUnauthorized();
+  if (auth instanceof NextResponse) return auth;
+  const userId = auth;
+
   try {
     const body = await request.json();
 
     // New async job format: body contains sourceType
     if (body && typeof body.sourceType === 'string') {
-      const auth = await requireUserOrUnauthorized();
-      if (auth instanceof NextResponse) return auth;
-      return handleNewJobRequest(body as CreateImportJobRequest, auth);
+      return handleNewJobRequest(body as CreateImportJobRequest, userId);
     }
 
     // Legacy synchronous format: body contains only url

@@ -9,6 +9,7 @@ import QuizBlock from './blocks/QuizBlock';
 import TextAnalyzerBlock from './blocks/TextAnalyzerBlock';
 import MediaImportBlock from './blocks/MediaImportBlock';
 import YouTubeLinkBlock from './blocks/YouTubeLinkBlock';
+import FileAttachmentBlock from './blocks/FileAttachmentBlock';
 
 /**
  * Active block registry.
@@ -26,6 +27,7 @@ import YouTubeLinkBlock from './blocks/YouTubeLinkBlock';
  * `media-import` alias. New blocks use `youtube-extract`. A one-time SQL
  * cleanup is documented in PROJECT_SUMMARY.md if you want to drop the alias.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const blockRegistry: Record<string, React.FC<any>> = {
   heading: HeadingBlock,
   text: TextBlock,
@@ -35,11 +37,12 @@ export const blockRegistry: Record<string, React.FC<any>> = {
   'text-analyzer': TextAnalyzerBlock,
   'youtube-extract': MediaImportBlock,
   'youtube-link': YouTubeLinkBlock,
+  'file-attachment': FileAttachmentBlock,
   // Back-compat alias for previously saved blocks. Remove once data migrated.
   'media-import': MediaImportBlock,
 };
 
-export function renderBlock(type: string, props: any) {
+export function renderBlock(type: string, props: Record<string, unknown>) {
   const BlockComponent = blockRegistry[type];
   if (!BlockComponent) {
     return (

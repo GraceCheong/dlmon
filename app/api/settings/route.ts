@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 
+const AI_PROVIDERS = ['ollama', 'claude-cli'] as const;
+
 export async function GET() {
   const auth = await requireUserOrUnauthorized();
   if (auth instanceof NextResponse) return auth;
@@ -16,6 +18,7 @@ export async function GET() {
       email: true,
       language: true,
       aiMode: true,
+      aiProvider: true,
     },
   });
 
@@ -28,7 +31,7 @@ export async function PATCH(request: Request) {
   if (auth instanceof NextResponse) return auth;
   const userId = auth;
 
-  let body: { displayName?: string; email?: string; language?: string; aiMode?: boolean };
+  let body: { displayName?: string; email?: string; language?: string; aiMode?: boolean; aiProvider?: string };
   try {
     body = await request.json();
   } catch {
@@ -45,6 +48,9 @@ export async function PATCH(request: Request) {
   }
   if (body.language === 'ko' || body.language === 'en') data.language = body.language;
   if (typeof body.aiMode === 'boolean') data.aiMode = body.aiMode;
+  if (typeof body.aiProvider === 'string' && AI_PROVIDERS.includes(body.aiProvider as typeof AI_PROVIDERS[number])) {
+    data.aiProvider = body.aiProvider;
+  }
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
@@ -61,12 +67,12 @@ export async function PATCH(request: Request) {
         email: true,
         language: true,
         aiMode: true,
+        aiProvider: true,
       },
     });
     return NextResponse.json({ settings: updated });
-  } catch (e: any) {
-    // P2002: unique constraint failure (likely email collision).
-    if (e?.code === 'P2002') {
+  } catch (e) {
+    if ((e as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
     }
     return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { ollamaGenerate, parseOllamaJSON, MODELS } from '@/lib/ollama';
 import { segmentAndAnalyze } from '@/lib/cedict';
+import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 
 export async function POST(request: Request) {
+  const auth = await requireUserOrUnauthorized();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const { text } = await request.json();
     if (!text) {
@@ -17,7 +21,7 @@ export async function POST(request: Request) {
       .filter(t => /[\u4e00-\u9fa5]/.test(t.text) && !t.pinyin)
       .map(t => t.text);
 
-    let ollamaPinyinMap: Record<string, { pinyin: string; hskLevel: number | null }> = {};
+    const ollamaPinyinMap: Record<string, { pinyin: string; hskLevel: number | null }> = {};
 
     if (missingPinyin.length > 0) {
       try {

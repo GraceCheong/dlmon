@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp, Save, RotateCcw } from 'lucide-react';
+import { Loader2, CheckCircle, ChevronDown, ChevronUp, Save, RotateCcw } from 'lucide-react';
+import { parseYouTubeUrl } from '@/lib/youtube-url';
 import type {
   TargetAudience, HskLevel, OutputOptions, TranscriptPolicy,
   JobStatusResponse, ImportedYouTubeAIResult, SaveAs,
@@ -179,6 +180,10 @@ export default function ImportYouTubeClient() {
     e.preventDefault();
     setFormError('');
     if (!url.trim()) { setFormError('YouTube URL을 입력하세요.'); return; }
+    if (!parseYouTubeUrl(url.trim())) {
+      setFormError('유효한 YouTube URL이 아닙니다. 일반 YouTube 링크, Shorts, youtu.be 링크를 지원합니다.');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/ai/import-media', {
@@ -255,6 +260,12 @@ export default function ImportYouTubeClient() {
               <p style={{ fontWeight: 700 }}>{jobStatus.videoTitle ?? '영상 정보 수집 중...'}</p>
               {jobStatus.channelName && <p style={{ fontSize: '0.85rem', color: '#718096' }}>{jobStatus.channelName}</p>}
             </div>
+          </div>
+        )}
+
+        {jobStatus?.durationSeconds !== undefined && jobStatus.durationSeconds > 600 && (
+          <div style={{ background: '#FEF3C7', color: '#92400E', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+            ⚠ 영상 길이가 약 {Math.floor(jobStatus.durationSeconds / 60)}분입니다. 10분 이상 영상은 음성 처리에 더 오랜 시간이 걸릴 수 있습니다.
           </div>
         )}
 
@@ -449,12 +460,15 @@ export default function ImportYouTubeClient() {
           <input
             type="text"
             className="input"
-            placeholder="https://www.youtube.com/watch?v=..."
+            placeholder="예: https://www.youtube.com/watch?v=... 또는 https://youtu.be/... 또는 https://www.youtube.com/shorts/..."
             value={url}
             onChange={e => setUrl(e.target.value)}
             required
             style={{ fontSize: '0.95rem' }}
           />
+          <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#718096' }}>
+            일반 YouTube, Shorts, youtu.be 링크를 지원합니다. 안정적인 음성 인식을 위해 <strong>10분 이하</strong> 영상을 권장합니다.
+          </p>
         </div>
 
         {/* Audience + Level */}

@@ -2,7 +2,7 @@
 
 import CourseForm from '@/components/dashboard/CourseForm';
 import { useLanguage } from '@/context/LanguageContext';
-import { ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
+import { BookMarked, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -47,6 +47,15 @@ export default function NewCoursePage() {
           <h1 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#4A5568', marginBottom: '0.75rem' }}>{t.common.newCourse}</h1>
         </div>
         <CourseForm />
+        <div style={{ marginTop: '2rem', padding: '1.25rem 1.5rem', background: '#F8FAFC', borderRadius: '1rem', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <div>
+            <p style={{ fontWeight: 700, color: '#4A5568', fontSize: '0.95rem', marginBottom: '0.25rem' }}>단독 수업 계획이 필요하신가요?</p>
+            <p style={{ color: '#A0AEC0', fontSize: '0.85rem' }}>AI로 개별 수업의 학습 목표·활동·평가를 한 번에 생성합니다.</p>
+          </div>
+          <Link href="/lesson-plans" className="btn btn-secondary" style={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}>
+            AI 수업 계획 생성
+          </Link>
+        </div>
         <div style={{ height: '5rem' }} />
       </div>
     );
@@ -65,7 +74,7 @@ export default function NewCoursePage() {
       </div>
 
       {/* Start Options */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '3rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginBottom: '3rem' }}>
         <button
           onClick={() => setMode('template')}
           className="card"
@@ -84,6 +93,17 @@ export default function NewCoursePage() {
           <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4A5568', marginBottom: '0.5rem' }}>AI와 함께 직접 만들기</h3>
           <p style={{ color: '#718096', fontSize: '0.9rem' }}>강좌 목표와 수준을 입력하면 AI가 맞춤형 15주 커리큘럼을 생성합니다.</p>
         </button>
+        <Link
+          href="/textbook-templates"
+          className="card"
+          style={{ padding: '2rem', textAlign: 'left', cursor: 'pointer', display: 'block', textDecoration: 'none' }}
+        >
+          <div style={{ marginBottom: '1rem' }}>
+            <BookMarked size={40} color="var(--primary-hover)" />
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4A5568', marginBottom: '0.5rem' }}>교재 기반으로 시작</h3>
+          <p style={{ color: '#718096', fontSize: '0.9rem' }}>교재와 단원 정보를 입력하면 AI가 교재 맞춤형 수업 템플릿을 자동 생성합니다.</p>
+        </Link>
       </div>
 
       {/* Template Grid */}

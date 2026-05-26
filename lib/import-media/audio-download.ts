@@ -1,11 +1,8 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import { TEMP_BASE_DIR, MAX_AUDIO_DURATION_MINUTES, MAX_AUDIO_FILE_SIZE_MB } from './constants';
 import type { AudioDownloadResult, ImportJobLimits } from './types';
-
-const execAsync = promisify(exec);
+import { execYtDlp, formatYtDlpCommand } from './yt-dlp';
 
 export async function downloadYouTubeAudio(
   url: string,
@@ -19,28 +16,33 @@ export async function downloadYouTubeAudio(
   const maxSizeMb = MAX_AUDIO_FILE_SIZE_MB;
   const outputTemplate = path.join(jobDir, 'source.%(ext)s');
 
-  // Build yt-dlp command. WAV is required for ffmpeg normalization downstream.
+  // WAV is required for ffmpeg normalization downstream.
   // max-filesize is a rough guard; ffmpeg will do precise duration trimming if needed.
-  const cmd = [
-    'yt-dlp',
+  const args = [
     '--extract-audio',
-    '--audio-format wav',
-    '--audio-quality 0',
+    '--audio-format',
+    'wav',
+    '--audio-quality',
+    '0',
     '--no-playlist',
-    `--max-filesize ${maxSizeMb}M`,
-    `-o "${outputTemplate}"`,
-    `"${url}"`,
-  ].join(' ');
+    '--max-filesize',
+    `${maxSizeMb}M`,
+    '-o',
+    outputTemplate,
+    url,
+  ];
 
-  console.log(`[audio-download] cmd: ${cmd}`);
+  console.log(`[audio-download] cmd: ${formatYtDlpCommand(args)}`);
   try {
-    const { stdout, stderr } = await execAsync(cmd, { timeout: (maxDurationMin + 5) * 60_000 });
+    const { stdout, stderr } = await execYtDlp(args, { timeout: (maxDurationMin + 5) * 60_000 });
     if (stdout) console.log(`[audio-download] stdout: ${stdout.slice(0, 500)}`);
     if (stderr) console.log(`[audio-download] stderr: ${stderr.slice(0, 500)}`);
   } catch (err) {
     console.error(`[audio-download] yt-dlp failed:`, err instanceof Error ? err.message : String(err));
     throw new Error(
-      `오디오 다운로드 실패. yt-dlp 설치 여부를 확인하세요: ${err instanceof Error ? err.message : String(err)}`,
+      `오디오 다운로드 실패. yt-dlp 또는 python -m yt_dlp 실행 가능 여부를 확인하세요: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
     );
   }
 

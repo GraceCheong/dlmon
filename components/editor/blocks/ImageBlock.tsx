@@ -5,9 +5,18 @@ import { Image as ImageIcon, X } from 'lucide-react';
 
 import { useState } from 'react';
 
-export default function ImageBlock({ id, content }: { id: string, content: { url: string, caption: string } }) {
-  const { updateBlock } = useEditor();
+const SIZE_OPTIONS = [
+  { label: '25%', value: 25 },
+  { label: '50%', value: 50 },
+  { label: '75%', value: 75 },
+  { label: '100%', value: 100 },
+];
+
+export default function ImageBlock({ id, content }: { id: string, content: { url: string, caption: string, widthPct?: number } }) {
+  const { updateBlock, isPreview } = useEditor();
   const [isDragging, setIsDragging] = useState(false);
+
+  const widthPct = content.widthPct ?? 100;
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -64,6 +73,7 @@ export default function ImageBlock({ id, content }: { id: string, content: { url
           </div>
           <input 
             type="text" 
+            value={content.url ?? ''}
             placeholder="https://example.com/image.png" 
             className="input"
             onClick={(e) => e.stopPropagation()}
@@ -82,46 +92,89 @@ export default function ImageBlock({ id, content }: { id: string, content: { url
           />
         </div>
       ) : (
-        <div style={{ position: 'relative' }}>
-          <img 
-            src={content.url} 
-            alt={content.caption} 
-            style={{ width: '100%', borderRadius: 'var(--radius-md)', display: 'block' }} 
-          />
-          <button 
-            onClick={() => updateBlock(id, { url: '' })}
-            style={{ 
-              position: 'absolute', 
-              top: '10px', 
-              right: '10px', 
-              background: 'rgba(0,0,0,0.5)', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '50%', 
-              width: '32px', 
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <X size={18} />
-          </button>
-          <input
-            type="text"
-            value={content.caption || ''}
-            onChange={(e) => updateBlock(id, { caption: e.target.value })}
-            placeholder="Add a caption..."
-            style={{
-              width: '100%',
-              border: 'none',
-              outline: 'none',
-              fontSize: '0.875rem',
-              color: 'var(--secondary)',
-              textAlign: 'center',
-              padding: '0.5rem 0'
-            }}
-          />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: widthPct < 100 ? 'center' : 'stretch', gap: 0 }}>
+          <div style={{ position: 'relative', width: `${widthPct}%` }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- Editor accepts arbitrary data URLs and pasted external image URLs. */}
+            <img 
+              src={content.url} 
+              alt={content.caption} 
+              style={{ width: '100%', borderRadius: 'var(--radius-md)', display: 'block' }} 
+            />
+            {!isPreview && (
+              <button 
+                onClick={() => updateBlock(id, { url: '' })}
+                style={{ 
+                  position: 'absolute', 
+                  top: '10px', 
+                  right: '10px', 
+                  background: 'rgba(0,0,0,0.5)', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '50%', 
+                  width: '32px', 
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+
+          {/* Size selector — edit mode only */}
+          {!isPreview && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem', justifyContent: widthPct < 100 ? 'center' : 'flex-start' }}>
+              <span style={{ fontSize: '0.75rem', color: '#A0AEC0', fontWeight: 600, marginRight: '0.25rem' }}>크기</span>
+              {SIZE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => updateBlock(id, { widthPct: opt.value })}
+                  style={{
+                    padding: '0.2rem 0.55rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    borderRadius: '999px',
+                    border: widthPct === opt.value ? '2px solid var(--primary)' : '1px solid #E2E8F0',
+                    background: widthPct === opt.value ? 'var(--primary-light)' : '#F8FAFC',
+                    color: widthPct === opt.value ? 'var(--primary-hover)' : '#718096',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Caption */}
+          {isPreview ? (
+            content.caption ? (
+              <p style={{ fontSize: '0.875rem', color: 'var(--secondary)', textAlign: 'center', padding: '0.5rem 0' }}>
+                {content.caption}
+              </p>
+            ) : null
+          ) : (
+            <input
+              type="text"
+              value={content.caption || ''}
+              onChange={(e) => updateBlock(id, { caption: e.target.value })}
+              placeholder="Add a caption..."
+              style={{
+                width: `${widthPct}%`,
+                alignSelf: widthPct < 100 ? 'center' : undefined,
+                border: 'none',
+                outline: 'none',
+                fontSize: '0.875rem',
+                color: 'var(--secondary)',
+                textAlign: 'center',
+                padding: '0.5rem 0',
+                background: 'transparent',
+              }}
+            />
+          )}
         </div>
       )}
     </div>

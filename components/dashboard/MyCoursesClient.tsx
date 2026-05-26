@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { 
   Plus,
   Search,
-  Filter
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import CourseCard from './CourseCard';
+import TemplatesClient from './TemplatesClient';
+import MarketTemplatesClient from './MarketTemplatesClient';
 
 interface Course {
   id: string;
@@ -22,14 +23,31 @@ interface Course {
   publishedCount: number;
 }
 
-interface MyCoursesClientProps {
-  courses: Course[];
+interface Template {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string;
+  targetAudience: string | null;
+  hskLevel: string | null;
+  sourceType: string;
+  updatedAt: string;
+  isPublished?: boolean;
 }
 
-export default function MyCoursesClient({ courses }: MyCoursesClientProps) {
+interface MyCoursesClientProps {
+  courses: Course[];
+  initialTemplates?: Template[];
+}
+
+export default function MyCoursesClient({ courses, initialTemplates = [] }: MyCoursesClientProps) {
   const { t } = useLanguage();
+  const [tab, setTab] = useState<'courses' | 'templates' | 'market'>('courses');
   const [filter, setFilter] = useState<'all' | 'ongoing' | 'completed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const myTemplates = initialTemplates.filter((t) => t.sourceType !== 'copied');
+  const marketTemplates = initialTemplates.filter((t) => t.sourceType === 'copied');
 
   const filteredCourses = courses.filter(course => {
     // Search filter (title contains query, case-insensitive)
@@ -44,21 +62,66 @@ export default function MyCoursesClient({ courses }: MyCoursesClientProps) {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* Page header with tabs */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#4A5568' }}>{t.common.myCourses}</h1>
-        <Link href="/courses/new" className="btn btn-primary" style={{ padding: '0.875rem 1.5rem' }}>
-          <Plus size={20} /> {t.common.newCourse}
-        </Link>
+        <div style={{ display: 'flex', gap: '0', background: '#F8FAFC', borderRadius: '0.75rem', padding: '0.25rem' }}>
+          <button
+            onClick={() => setTab('courses')}
+            style={{
+              padding: '0.55rem 1.25rem', borderRadius: '0.5rem', border: 'none', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+              background: tab === 'courses' ? 'white' : 'transparent',
+              color: tab === 'courses' ? 'var(--primary-hover)' : '#A0AEC0',
+              boxShadow: tab === 'courses' ? '0 2px 6px rgba(0,0,0,0.07)' : 'none',
+            }}
+          >
+            {t.common.myCourses}
+          </button>
+          <button
+            onClick={() => setTab('templates')}
+            style={{
+              padding: '0.55rem 1.25rem', borderRadius: '0.5rem', border: 'none', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+              background: tab === 'templates' ? 'white' : 'transparent',
+              color: tab === 'templates' ? 'var(--primary-hover)' : '#A0AEC0',
+              boxShadow: tab === 'templates' ? '0 2px 6px rgba(0,0,0,0.07)' : 'none',
+            }}
+          >
+            내 템플릿
+          </button>
+          <button
+            onClick={() => setTab('market')}
+            style={{
+              padding: '0.55rem 1.25rem', borderRadius: '0.5rem', border: 'none', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+              background: tab === 'market' ? 'white' : 'transparent',
+              color: tab === 'market' ? 'var(--primary-hover)' : '#A0AEC0',
+              boxShadow: tab === 'market' ? '0 2px 6px rgba(0,0,0,0.07)' : 'none',
+            }}
+          >
+            마켓 템플릿{marketTemplates.length > 0 && (
+              <span style={{ marginLeft: '0.35rem', background: 'var(--primary)', color: 'white', borderRadius: '2rem', fontSize: '0.72rem', padding: '0.05rem 0.45rem', fontWeight: 700 }}>{marketTemplates.length}</span>
+            )}
+          </button>
+        </div>
+        {tab === 'courses' && (
+          <Link href="/courses/new" className="btn btn-primary" style={{ padding: '0.875rem 1.5rem' }}>
+            <Plus size={20} /> {t.common.newCourse}
+          </Link>
+        )}
       </div>
 
+      {tab === 'market' ? (
+        <MarketTemplatesClient initialTemplates={marketTemplates} />
+      ) : tab === 'templates' ? (
+        <TemplatesClient initialTemplates={myTemplates} />
+      ) : (
+        <>
       {/* Filters & Search */}
       <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <Search size={18} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: '#A0AEC0' }} />
           <input
             type="text"
-            placeholder="강좌 검색..."
+            placeholder={t.courses.searchPlaceholder}
             className="input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -68,7 +131,7 @@ export default function MyCoursesClient({ courses }: MyCoursesClientProps) {
         <select 
           className="input" 
           value={filter}
-          onChange={(e) => setFilter(e.target.value as any)}
+          onChange={(e) => setFilter(e.target.value as 'all' | 'ongoing' | 'completed')}
           style={{ width: '180px', background: 'white', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', fontWeight: 600, color: '#718096' }}
         >
           <option value="all">모든 강좌</option>
@@ -111,6 +174,8 @@ export default function MyCoursesClient({ courses }: MyCoursesClientProps) {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -5,6 +5,14 @@ import { requireUserOrRedirect } from '@/lib/auth-helpers';
 export default async function DashboardPage() {
   const userId = await requireUserOrRedirect();
 
+  let enhancedCourses: {
+    id: string; title: string; level: string; weeks: number;
+    updatedAt: string; startDate?: string; endDate?: string;
+    lessonCount: number; publishedCount: number;
+  }[] = [];
+  let stats = { totalCourses: 0, publishedLessons: 0, studentViews: 0 };
+  let errorMsg: string | null = null;
+
   try {
     // Single query: courses with their lessons (eager-loaded — no N+1).
     const courses = await prisma.course.findMany({
@@ -13,11 +21,11 @@ export default async function DashboardPage() {
       include: { lessons: { select: { id: true, status: true } } },
     });
 
-    const enhancedCourses = courses.map((course) => ({
+    enhancedCourses = courses.map((course) => ({
       id: course.id,
       title: course.title,
-      level: course.level,
-      weeks: course.weeks,
+      level: course.level ?? '',
+      weeks: course.weeks ?? 0,
       updatedAt: course.updatedAt.toISOString(),
       startDate: course.startDate?.toISOString(),
       endDate: course.endDate?.toISOString(),
@@ -30,20 +38,24 @@ export default async function DashboardPage() {
       where: { member: { userId } },
     });
 
-    const stats = {
+    stats = {
       totalCourses: courses.length,
       publishedLessons: enhancedCourses.reduce((acc, c) => acc + c.publishedCount, 0),
       studentViews,
     };
+  } catch (error) {
+    console.error('Dashboard load error:', error);
+    errorMsg = 'dashboard_error';
+  }
 
-    return <DashboardClient courses={enhancedCourses} stats={stats} />;
-  } catch (error: any) {
+  if (errorMsg !== null) {
     return (
-      <div style={{ padding: '2rem', color: 'red' }}>
-        <h1>Dashboard Error</h1>
-        <pre>{error.message}</pre>
-        <pre>{error.stack}</pre>
+      <div style={{ padding: '2rem', color: '#991B1B', background: '#FEF2F2', borderRadius: '1rem' }}>
+        <h2 style={{ marginBottom: '0.5rem' }}>대시보드를 불러오지 못했습니다</h2>
+        <p style={{ color: '#718096' }}>잠시 후 다시 시도해 주세요.</p>
       </div>
     );
   }
+
+  return <DashboardClient courses={enhancedCourses} stats={stats} />;
 }

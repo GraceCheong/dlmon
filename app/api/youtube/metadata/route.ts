@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { parseYouTubeUrl } from '@/lib/youtube-url';
 
 /**
  * POST /api/youtube/metadata
@@ -29,13 +30,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '`url` is required' }, { status: 400 });
   }
 
-  const videoId = extractVideoId(raw);
-  if (!videoId) {
+  const parsed = parseYouTubeUrl(raw);
+  if (!parsed) {
     return NextResponse.json({ error: '유효한 YouTube URL이 아닙니다.' }, { status: 400 });
   }
 
   // Normalise to canonical watch URL for oEmbed + return value.
-  const originalUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const { videoId, canonicalUrl: originalUrl } = parsed;
 
   // Thumbnail — always derivable from videoId; no network call needed.
   const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
@@ -65,30 +66,4 @@ export async function POST(request: Request) {
     isThumbnailAvailable: true,
     isTitleAvailable,
   });
-}
-
-/** Extract a YouTube video ID from common URL patterns. Returns null if not found. */
-function extractVideoId(url: string): string | null {
-  try {
-    const u = new URL(url);
-    // youtu.be/VIDEO_ID
-    if (u.hostname === 'youtu.be') {
-      const id = u.pathname.slice(1).split('/')[0];
-      return isValidId(id) ? id : null;
-    }
-    // youtube.com/shorts/VIDEO_ID
-    if (u.pathname.startsWith('/shorts/')) {
-      const id = u.pathname.slice('/shorts/'.length).split('/')[0];
-      return isValidId(id) ? id : null;
-    }
-    // youtube.com/watch?v=VIDEO_ID
-    const v = u.searchParams.get('v');
-    return v && isValidId(v) ? v : null;
-  } catch {
-    return null;
-  }
-}
-
-function isValidId(id: string): boolean {
-  return /^[A-Za-z0-9_-]{11}$/.test(id);
 }

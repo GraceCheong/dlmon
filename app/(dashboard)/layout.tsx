@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   LayoutDashboard,
   BookOpen,
@@ -9,11 +10,9 @@ import {
   Settings,
   LogOut,
   PlusCircle,
-  Menu,
-  Sparkles,
   Users,
   Award,
-  FileDown
+  Globe,
 } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -92,7 +91,11 @@ export default function DashboardLayout({
           <Link href="/courses/new" className="btn btn-primary" style={{ justifyContent: 'flex-start', padding: '0.875rem 1.25rem' }}>
             <PlusCircle size={20} /> {t.common.newCourse}
           </Link>
-          <SidebarLink href="/materials/import/youtube" icon={<FileDown size={20} />} label={t.common.youtubeImport} active={pathname.startsWith('/materials')} />
+
+          <div style={{ margin: '1.5rem 0 0.5rem', padding: '0 0.75rem', fontSize: '0.7rem', color: '#CBD5E0', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em' }}>
+            {t.common.tools}
+          </div>
+          <SidebarLink href="/marketplace" icon={<Globe size={20} />} label={t.common.marketplace} active={pathname.startsWith('/marketplace')} />
         </nav>
 
         <div style={{ borderTop: '2px solid #F8FAFC', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -191,8 +194,6 @@ export default function DashboardLayout({
     </div>
   );
 }
-
-import Link from 'next/link';
 
 function SidebarLink({ href, icon, label, active = false }: { href: string, icon: React.ReactNode, label: string, active?: boolean }) {
   return (

@@ -1,0 +1,111 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e16]: 課
+        - generic [ref=e17]:
+          - generic [ref=e18]: 課意studio
+          - text: KeYi Studio
+      - navigation [ref=e19]:
+        - link "Dashboard" [ref=e152] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e22]
+          - generic [ref=e27]: Dashboard
+        - link "My Courses" [ref=e153] [cursor=pointer]:
+          - /url: /courses
+          - img [ref=e30]
+          - generic [ref=e32]: My Courses
+        - link "Members" [ref=e154] [cursor=pointer]:
+          - /url: /members
+          - img [ref=e35]
+          - generic [ref=e40]: Members
+        - link "Assignments" [ref=e155] [cursor=pointer]:
+          - /url: /assignments
+          - img [ref=e43]
+          - generic [ref=e46]: Assignments
+        - link "Syllabi" [ref=e156] [cursor=pointer]:
+          - /url: /syllabi
+          - img [ref=e49]
+          - generic [ref=e52]: Syllabi
+        - generic [ref=e53]: Authoring
+        - link "New Course" [ref=e157] [cursor=pointer]:
+          - /url: /courses/new
+          - img [ref=e55]
+          - text: New Course
+        - link "File Library" [ref=e158] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e59]
+          - generic [ref=e61]: File Library
+        - generic [ref=e62]: AI Tools
+        - link "Lesson Plan Generator" [ref=e159] [cursor=pointer]:
+          - /url: /lesson-plans
+          - img [ref=e65]
+          - generic [ref=e68]: Lesson Plan Generator
+        - link "My Templates" [ref=e160] [cursor=pointer]:
+          - /url: /templates
+          - img [ref=e71]
+          - generic [ref=e75]: My Templates
+        - link "Marketplace" [ref=e161] [cursor=pointer]:
+          - /url: /marketplace
+          - img [ref=e78]
+          - generic [ref=e81]: Marketplace
+        - link "Textbook Templates" [ref=e162] [cursor=pointer]:
+          - /url: /textbook-templates
+          - img [ref=e84]
+          - generic [ref=e87]: Textbook Templates
+      - generic [ref=e88]:
+        - generic [ref=e90]:
+          - button "한국어" [ref=e91] [cursor=pointer]
+          - button "English" [active] [ref=e92] [cursor=pointer]
+        - link "Settings" [ref=e163] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e95]
+          - generic [ref=e98]: Settings
+        - button "Log out" [ref=e164] [cursor=pointer]:
+          - img [ref=e100]
+          - generic [ref=e103]: Log out
+    - main [ref=e104]:
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - heading "Classroom Management" [level=1] [ref=e165]
+          - paragraph [ref=e108]: Review your lesson materials and courses
+        - generic [ref=e109]:
+          - generic [ref=e110]:
+            - generic [ref=e111]: test
+            - generic [ref=e112]: Full Member
+          - generic [ref=e113]: TE
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - heading "Student Management" [level=1] [ref=e166]
+          - button "Add Student" [ref=e167] [cursor=pointer]:
+            - img [ref=e118]
+            - text: Add Student
+        - generic [ref=e121]:
+          - generic [ref=e123]:
+            - img [ref=e124]
+            - textbox "Search by name or email..." [ref=e168]
+          - table [ref=e128]:
+            - rowgroup [ref=e129]:
+              - row "Name Email Class Role Date Added" [ref=e169]:
+                - columnheader "Name" [ref=e170]
+                - columnheader "Email" [ref=e171]
+                - columnheader "Class" [ref=e172]
+                - columnheader "Role" [ref=e173]
+                - columnheader "Date Added" [ref=e174]
+                - columnheader [ref=e136]
+            - rowgroup [ref=e137]:
+              - row "Q QA 테스트 학생 qa-student@test.com - Student 2026.05.06 수강생 삭제" [ref=e175]:
+                - cell "Q QA 테스트 학생" [ref=e139]:
+                  - generic [ref=e140]:
+                    - generic [ref=e141]: Q
+                    - generic [ref=e142]: QA 테스트 학생
+                - cell "qa-student@test.com" [ref=e143]
+                - cell "-" [ref=e144]
+                - cell "Student" [ref=e176]
+                - cell "2026.05.06" [ref=e146]
+                - cell "수강생 삭제" [ref=e147]:
+                  - button "수강생 삭제" [ref=e148] [cursor=pointer]:
+                    - img [ref=e149]
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e12]

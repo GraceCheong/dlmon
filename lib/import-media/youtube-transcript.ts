@@ -1,11 +1,8 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import { TEMP_BASE_DIR } from './constants';
 import type { TranscriptFetchResult } from './types';
-
-const execAsync = promisify(exec);
+import { execYtDlp } from './yt-dlp';
 
 /** Parse an SRT or VTT file into plain text, deduplicating adjacent identical lines. */
 function parseSubtitleFile(content: string): string {
@@ -70,19 +67,21 @@ export async function fetchYouTubeTranscript(
 
   try {
     // Prefer manual subs; fall back to auto-generated. Convert to SRT for easy parsing.
-    const cmd = [
-      'yt-dlp',
+    const args = [
       '--write-subs',
       '--write-auto-subs',
-      '--sub-lang "zh-Hans,zh-Hant,zh,en"',
+      '--sub-lang',
+      'zh-Hans,zh-Hant,zh,en',
       '--skip-download',
       '--no-playlist',
-      '--convert-subs srt',
-      `-o "${outputTemplate}"`,
-      `"${url}"`,
-    ].join(' ');
+      '--convert-subs',
+      'srt',
+      '-o',
+      outputTemplate,
+      url,
+    ];
 
-    await execAsync(cmd, { timeout: 60_000 });
+    await execYtDlp(args, { timeout: 60_000 });
   } catch {
     // yt-dlp may have returned a non-zero exit code when no subs exist — not fatal.
   }

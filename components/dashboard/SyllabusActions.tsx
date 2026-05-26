@@ -45,7 +45,7 @@ export default function SyllabusActions({ courseId, initialContent }: Props) {
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
       };
       await html2pdf().from(element).set(opt).save();
-    } catch (e) {
+    } catch {
       setError('PDF 생성 실패');
     } finally {
       setExporting(false);

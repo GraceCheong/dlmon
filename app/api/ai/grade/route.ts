@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateText } from 'ai';
-import { aiClient, defaultModel } from '@/lib/ai/client';
+import { cleanAiJsonResponse, writingAiTimeoutMs } from '@/lib/ai/client';
+import { generateAiText } from '@/lib/ai/generate';
 
 /**
  * @deprecated since Phase 3 (2026-05-01).
  *
  * This route does single-shot grading without a versioned rubric, without
- * ownership checks, and without language validation. The current student
- * portal (`app/student/...`) still posts here, so it must remain wired up
- * for now per spec §5 ("do not remove if the current student portal depends
- * on it").
+ * language validation. The current student portal (`app/student/...`) still
+ * posts here, so it must remain wired up for now per spec §5 ("do not remove
+ * if the current student portal depends on it").
  *
  * Teacher-side grading must NOT use this. Use instead:
  *   POST /api/ai/writing-rubrics/generate     — set up a rubric
@@ -29,15 +28,57 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // 1. Construct the AI Grading Prompt
+    // Verify assignment exists and fetch its ownership chain.
+    const assignment = await prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: { lesson: { include: { course: { select: { userId: true } } } } },
+    });
+    const member = await prisma.member.findUnique({ where: { id: memberId } });
+
+    // Ensure member and assignment belong to the same teacher, preventing
+    // cross-tenant submission rows.
+    if (
+      !assignment ||
+      !member ||
+      member.userId !== assignment.lesson.course.userId
+    ) {
+      return NextResponse.json({ error: 'Assignment or member not found' }, { status: 404 });
+    }
+
+    const existingSubmission = await prisma.submission.findFirst({
+      where: { assignmentId, memberId },
+      select: {
+        id: true,
+        contentText: true,
+        aiScore: true,
+        aiFeedback: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+    if (existingSubmission) {
+      return NextResponse.json(
+        {
+          error: '이미 제출된 과제입니다.',
+          submission: {
+            ...existingSubmission,
+            contentText: existingSubmission.contentText ?? '',
+            aiScore: existingSubmission.aiScore ?? 0,
+            aiFeedback: existingSubmission.aiFeedback ?? '',
+          },
+        },
+        { status: 409 },
+      );
+    }
+
     const systemPrompt = `
-      You are an expert Chinese language teacher. 
+      You are an expert Chinese language teacher.
       Evaluate the student's Chinese writing submission based on the original assignment prompt.
-      
+
       Assignment Prompt: "${prompt}"
-      
+
       Student Submission: "${content}"
-      
+
       Provide your evaluation in the following JSON format ONLY:
       {
         "score": <an integer between 0 and 100>,
@@ -49,26 +90,17 @@ export async function POST(request: Request) {
     let feedback = "잘 작성하셨습니다! 문법적인 오류는 거의 없으나, 어휘 선택을 조금 더 자연스럽게 다듬으면 좋겠습니다.";
 
     try {
-      // 2. Call the Local LLM via Vercel AI SDK
-      const { text } = await generateText({
-        model: aiClient(defaultModel),
-        prompt: systemPrompt,
-      });
+      const teacherId = assignment.lesson.course.userId;
+      const text = await generateAiText({ prompt: systemPrompt, userId: teacherId, timeoutMs: writingAiTimeoutMs });
+      const parsed = JSON.parse(cleanAiJsonResponse(text));
 
-      // 3. Parse the JSON response
-      // Sometimes LLMs wrap JSON in markdown blocks, so we clean it up
-      const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(jsonString);
-      
       if (parsed.score !== undefined) score = parsed.score;
       if (parsed.feedback) feedback = parsed.feedback;
-      
+
     } catch (aiError) {
       console.error('LLM Evaluation failed, falling back to dummy grading:', aiError);
-      // Fallback is already set
     }
 
-    // 4. Save the submission to the database
     const submission = await prisma.submission.create({
       data: {
         assignmentId,
@@ -76,8 +108,8 @@ export async function POST(request: Request) {
         contentText: content,
         aiScore: score,
         aiFeedback: feedback,
-        status: 'graded'
-      }
+        status: 'graded',
+      },
     });
 
     return NextResponse.json({ submission });

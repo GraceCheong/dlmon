@@ -2,14 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  BookOpen, 
-  Users, 
-  CheckCircle, 
-  Clock,
-  ExternalLink,
-  MoreVertical,
-  Plus
+import {
+  BookOpen,
+  Users,
+  CheckCircle,
+  Plus,
+  ChevronRight,
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import CourseCard from './CourseCard';
@@ -42,25 +40,22 @@ export default function DashboardClient({ courses, stats }: DashboardClientProps
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       {/* Stats Summary */}
       <div className="grid-cols-3">
-        <StatCard 
-          icon={<BookOpen size={24} />} 
-          label={t.dashboard.stats.totalCourses} 
-          value={stats.totalCourses.toString()} 
-          change="+1 this month" 
+        <StatCard
+          icon={<BookOpen size={24} />}
+          label={t.dashboard.stats.totalCourses}
+          value={stats.totalCourses.toString()}
           color="var(--primary)"
         />
-        <StatCard 
-          icon={<CheckCircle size={24} />} 
-          label={t.dashboard.stats.publishedLessons} 
-          value={stats.publishedLessons.toString()} 
-          change="+3 last week" 
+        <StatCard
+          icon={<CheckCircle size={24} />}
+          label={t.dashboard.stats.publishedLessons}
+          value={stats.publishedLessons.toString()}
           color="var(--secondary)"
         />
-        <StatCard 
-          icon={<Users size={24} />} 
-          label={t.dashboard.stats.studentViews} 
-          value={stats.studentViews.toString()} 
-          change="+12% from last month" 
+        <StatCard
+          icon={<Users size={24} />}
+          label={t.dashboard.stats.studentViews}
+          value={stats.studentViews.toString()}
           color="#CE93D8"
         />
       </div>
@@ -113,17 +108,12 @@ export default function DashboardClient({ courses, stats }: DashboardClientProps
   );
 }
 
-import { ChevronRight } from 'lucide-react';
-
-function StatCard({ icon, label, value, change, color }: { icon: React.ReactNode, label: string, value: string, change: string, color: string }) {
+function StatCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) {
   return (
     <div className="card" style={{ padding: '2rem', border: 'none', background: 'white' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-        <div style={{ color: color, background: `${color}15`, padding: '0.75rem', borderRadius: '1.25rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ color: color, background: `${color}15`, padding: '0.75rem', borderRadius: '1.25rem', display: 'inline-flex' }}>
           {icon}
-        </div>
-        <div style={{ padding: '0.4rem 0.75rem', borderRadius: '2rem', background: '#F0FDF4', color: '#4ADE80', fontSize: '0.75rem', fontWeight: 700 }}>
-          {change}
         </div>
       </div>
       <div>

@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { generateCourseCurriculum } from '@/lib/ai/generator';
+import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireUserOrUnauthorized();
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth;
 
     const body = await request.json();
     
@@ -24,7 +22,7 @@ export async function POST(request: Request) {
       keywords: body.keywords,
       language: body.language,
       startDate: body.startDate,
-      userId: (session.user as any).id,
+      userId,
     });
 
     return NextResponse.json(course);

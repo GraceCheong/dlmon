@@ -2,18 +2,19 @@
 
 import { useEditor } from '@/context/EditorContext';
 import { useState, useEffect } from 'react';
-import { Eye, Save, Send, ChevronLeft, Check, Download, Sparkles, Wifi, WifiOff } from 'lucide-react';
+import { Eye, Save, Send, ChevronLeft, Check, Download, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function EditorToolbar({ lessonId, courseId, title, initialStatus }: { lessonId: string; courseId: string; title: string; initialStatus?: string }) {
   const { t } = useLanguage();
-  const { blocks, isPreview, setIsPreview } = useEditor();
+  const { blocks, isPreview, setIsPreview, setIsExporting } = useEditor();
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [status, setStatus] = useState(initialStatus || 'draft');
   const [exportingPdf, setExportingPdf] = useState(false);
   const [ollamaOnline, setOllamaOnline] = useState<boolean | null>(null);
@@ -59,17 +60,21 @@ export default function EditorToolbar({ lessonId, courseId, title, initialStatus
 
   const handlePublish = async () => {
     setPublishing(true);
+    setPublishError(null);
     try {
       const response = await fetch(`/api/lessons/${lessonId}/publish`, { method: 'POST' });
-      if (response.ok) {
-        const data = await response.json();
-        setStatus(data.status);
-        if (data.status === 'published') {
-          window.open(`/p/${data.slug}`, '_blank');
-        }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setPublishError(data.error || '배포에 실패했습니다.');
+        return;
+      }
+      setStatus(data.status);
+      if (data.status === 'published') {
+        window.open(`/p/${encodeURIComponent(data.slug)}`, '_blank');
       }
     } catch (e) {
       console.error('Publish failed:', e);
+      setPublishError('네트워크 오류로 배포에 실패했습니다.');
     } finally {
       setPublishing(false);
     }
@@ -80,6 +85,15 @@ export default function EditorToolbar({ lessonId, courseId, title, initialStatus
     const element = document.getElementById('editor-canvas-content');
     if (!element) { setExportingPdf(false); return; }
 
+    // Switch to preview + exporting mode so edit controls are hidden and
+    // PDF blocks are expanded to show all pages inline.
+    const wasPreview = isPreview;
+    setIsPreview(true);
+    setIsExporting(true);
+
+    // Wait for React to re-render and for PDF.js pages to finish rendering.
+    await new Promise(r => setTimeout(r, 1800));
+
     // YouTube iframes don't render in html2canvas. Swap them to the static
     // PDF fallback divs (thumbnail + title + link) before capture, then restore.
     const embeds = Array.from(element.querySelectorAll<HTMLElement>('[data-yt-embed]'));
@@ -89,21 +103,24 @@ export default function EditorToolbar({ lessonId, courseId, title, initialStatus
 
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      const options: any = {
-        margin: [10, 10, 10, 10],
+      interface Html2PdfInstance { from(el: HTMLElement): this; set(o: unknown): this; save(): Promise<void>; }
+      const options = {
+        margin: [10, 15, 10, 15],
         filename: `${title.substring(0, 30)}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: false, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['img', 'canvas', '.pdf-no-break'] }
       };
-      await (html2pdf() as any).from(element).set(options).save();
+      await (html2pdf() as unknown as Html2PdfInstance).from(element).set(options).save();
     } catch (e) {
       console.error('PDF export failed:', e);
     } finally {
       // Always restore regardless of success or failure
       embeds.forEach(el => { el.style.display = ''; });
       fallbacks.forEach(el => { el.style.display = ''; });
+      setIsExporting(false);
+      setIsPreview(wasPreview);
       setExportingPdf(false);
     }
   };
@@ -146,6 +163,14 @@ export default function EditorToolbar({ lessonId, courseId, title, initialStatus
             title={saveError}
           >
             ⚠ {saveError}
+          </span>
+        )}
+        {publishError && (
+          <span
+            style={{ fontSize: '0.875rem', color: '#991B1B', fontWeight: 600 }}
+            title={publishError}
+          >
+            ⚠ {publishError}
           </span>
         )}
 

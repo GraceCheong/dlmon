@@ -1,0 +1,106 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e16]: 課
+        - generic [ref=e17]:
+          - generic [ref=e18]: 課意studio
+          - text: KeYi Studio
+      - navigation [ref=e19]:
+        - link "대시보드" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e22]
+          - generic [ref=e27]: 대시보드
+        - link "내 강의실" [ref=e28] [cursor=pointer]:
+          - /url: /courses
+          - img [ref=e30]
+          - generic [ref=e32]: 내 강의실
+        - link "수강생 관리" [ref=e33] [cursor=pointer]:
+          - /url: /members
+          - img [ref=e35]
+          - generic [ref=e40]: 수강생 관리
+        - link "과제 및 평가" [ref=e41] [cursor=pointer]:
+          - /url: /assignments
+          - img [ref=e43]
+          - generic [ref=e46]: 과제 및 평가
+        - link "강의 계획서" [ref=e47] [cursor=pointer]:
+          - /url: /syllabi
+          - img [ref=e49]
+          - generic [ref=e52]: 강의 계획서
+        - generic [ref=e53]: 수업 자료 제작
+        - link "새 강좌 만들기" [ref=e54] [cursor=pointer]:
+          - /url: /courses/new
+          - img [ref=e55]
+          - text: 새 강좌 만들기
+        - link "YouTube AI 교재" [ref=e57] [cursor=pointer]:
+          - /url: /materials/import/youtube
+          - img [ref=e59]
+          - generic [ref=e63]: YouTube AI 교재
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - button "한국어" [ref=e67] [cursor=pointer]
+          - button "English" [ref=e68] [cursor=pointer]
+        - link "계정 설정" [ref=e69] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e71]
+          - generic [ref=e74]: 계정 설정
+        - button "로그아웃" [ref=e75] [cursor=pointer]:
+          - img [ref=e76]
+          - generic [ref=e79]: 로그아웃
+    - main [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - heading "수업 관리" [level=1] [ref=e83]
+          - paragraph [ref=e84]: 선생님의 소중한 수업 자료와 강좌를 확인해 보세요.
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - generic [ref=e87]: test
+            - generic [ref=e88]: 정회원 계정
+          - generic [ref=e89]: TE
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - heading "수강생 관리" [level=1] [ref=e92]
+          - button "수강생 초대하기" [ref=e93] [cursor=pointer]:
+            - img [ref=e94]
+            - text: 수강생 초대하기
+        - generic [ref=e97]:
+          - generic [ref=e99]:
+            - img [ref=e100]
+            - textbox "이름 또는 이메일로 검색..." [ref=e103]
+          - table [ref=e104]:
+            - rowgroup [ref=e105]:
+              - row "이름 이메일 반/분반 역할 가입일" [ref=e106]:
+                - columnheader "이름" [ref=e107]
+                - columnheader "이메일" [ref=e108]
+                - columnheader "반/분반" [ref=e109]
+                - columnheader "역할" [ref=e110]
+                - columnheader "가입일" [ref=e111]
+                - columnheader [ref=e112]
+            - rowgroup [ref=e113]:
+              - row "아직 등록된 수강생이 없습니다. 첫 수강생을 초대해보세요." [ref=e114]:
+                - cell "아직 등록된 수강생이 없습니다. 첫 수강생을 초대해보세요." [ref=e115]
+        - generic [ref=e148]:
+          - generic [ref=e149]:
+            - heading "수강생 초대하기" [level=2] [ref=e150]
+            - button [ref=e151] [cursor=pointer]:
+              - img [ref=e152]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]: 이름
+              - textbox [active] [ref=e158]
+            - generic [ref=e159]:
+              - generic [ref=e160]: 이메일 (선택)
+              - generic [ref=e161]:
+                - img [ref=e162]
+                - textbox [ref=e165]
+            - generic [ref=e166]:
+              - generic [ref=e167]: 반/분반 (선택)
+              - generic [ref=e168]:
+                - img [ref=e169]
+                - 'textbox "예: 초급반-A" [ref=e174]'
+          - generic [ref=e175]:
+            - button "취소" [ref=e176] [cursor=pointer]
+            - button "초대" [disabled] [ref=e177] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e12]

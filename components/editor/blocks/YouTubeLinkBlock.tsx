@@ -38,7 +38,7 @@ export default function YouTubeLinkBlock({ id, content }: { id: string; content:
       updateBlock(id, {
         url: data.originalUrl,
         videoId: data.videoId,
-        title: data.title || manualTitle || '',
+        title: data.title || manualTitle.trim() || '',
         thumbnailUrl: data.thumbnailUrl,
         originalUrl: data.originalUrl,
         thumbnailStatus: data.isThumbnailAvailable ? 'available' : 'unavailable',
@@ -174,6 +174,18 @@ export default function YouTubeLinkBlock({ id, content }: { id: string; content:
         >
           {loading ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> 불러오는 중...</> : '추가'}
         </button>
+      </div>
+      <div style={{ marginTop: '0.75rem' }}>
+        <label style={{ display: 'block', color: '#718096', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+          제목 직접 입력 (선택)
+        </label>
+        <input
+          type="text"
+          className="input"
+          value={manualTitle}
+          onChange={e => setManualTitle(e.target.value)}
+          placeholder="제목을 가져오지 못했을 때 사용할 표시 제목"
+        />
       </div>
       <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

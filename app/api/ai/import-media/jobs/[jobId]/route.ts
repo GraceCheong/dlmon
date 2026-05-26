@@ -46,6 +46,7 @@ export async function GET(
     durationSeconds: job.durationSeconds ?? undefined,
     thumbnailUrl: job.thumbnailUrl ?? undefined,
     // transcript
+    transcriptText: job.transcriptText ?? undefined,
     transcriptSource: (job.transcriptSource as JobStatusResponse['transcriptSource']) ?? undefined,
     transcriptStatus: (job.transcriptStatus as JobStatusResponse['transcriptStatus']) ?? undefined,
     // audio — paths omitted by design

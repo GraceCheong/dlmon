@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditor } from '@/context/EditorContext';
-import { ListMusic, Plus, Trash2, Video } from 'lucide-react';
+import { ListMusic, Plus, Trash2 } from 'lucide-react';
 
 
 interface Highlight {

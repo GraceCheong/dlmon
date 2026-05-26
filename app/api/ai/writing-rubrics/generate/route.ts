@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateText } from 'ai';
-import { aiClient, defaultModel } from '@/lib/ai/client';
+import { cleanAiJsonResponse, getAiErrorMessage, isAiTimeoutError, rubricAiTimeoutMs } from '@/lib/ai/client';
+import { generateAiText } from '@/lib/ai/generate';
 import { requireUserOrUnauthorized } from '@/lib/auth-helpers';
 import {
-  DEFAULT_CRITERIA_DESCRIPTION,
-  DEFAULT_DEDUCTION_POLICY,
   buildRubricGenerationPrompt,
+  getDefaultCriteriaDescription,
+  getDefaultDeductionPolicy,
 } from '@/lib/writing-evaluation';
 
 interface GenerateRubricBody {
@@ -15,6 +15,7 @@ interface GenerateRubricBody {
   courseId?: string;
   lessonId?: string;
   assignmentId?: string;
+  replaceAssignmentRubric?: boolean;
   /**
    * Manual override: when present, skip the AI call and store the manual
    * rubric directly. Spec section 4.1 + design decision "AI + manual override".
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
   }
 
   // Ownership checks for any optional scope IDs that the rubric is attached to.
+  let previousAssignmentRubricId: string | null = null;
   if (body.courseId) {
     const course = await prisma.course.findUnique({ where: { id: body.courseId } });
     if (!course || course.userId !== userId) {
@@ -79,6 +81,7 @@ export async function POST(request: Request) {
     if (!assignment || assignment.lesson.course.userId !== userId) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
     }
+    previousAssignmentRubricId = assignment.rubricId;
   }
 
   let criteria: Record<string, string>;
@@ -86,6 +89,8 @@ export async function POST(request: Request) {
   let createdByAi = false;
   let aiProvider: string | undefined;
   let aiModel: string | undefined;
+  const fallbackCriteria = getDefaultCriteriaDescription(hskLevel);
+  const fallbackPolicy = getDefaultDeductionPolicy(hskLevel);
 
   if (body.manualRubric) {
     // ---- Manual override path ----
@@ -120,40 +125,42 @@ export async function POST(request: Request) {
       assignmentPrompt: undefined,
     });
     try {
-      const { text } = await generateText({
-        model: aiClient(defaultModel),
-        prompt,
-      });
-      // Strip code fences if the model wrapped the JSON in them.
-      const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-      const parsed = JSON.parse(cleaned);
+      if (request.signal.aborted) {
+        return NextResponse.json({ error: 'Rubric generation cancelled' }, { status: 499 });
+      }
+      const parsed = JSON.parse(cleanAiJsonResponse(await generateAiText({ prompt, userId, timeoutMs: rubricAiTimeoutMs })));
       criteria =
         parsed.criteria && typeof parsed.criteria === 'object'
-          ? parsed.criteria
-          : DEFAULT_CRITERIA_DESCRIPTION;
+          ? { ...fallbackCriteria, ...parsed.criteria }
+          : fallbackCriteria;
       deductionPolicy =
         parsed.deductionPolicy && typeof parsed.deductionPolicy === 'object'
-          ? parsed.deductionPolicy
-          : DEFAULT_DEDUCTION_POLICY;
+          ? { ...fallbackPolicy, ...parsed.deductionPolicy }
+          : fallbackPolicy;
       // Fall back if AI-produced policy doesn't sum to 100.
       const sum = Object.values(deductionPolicy).reduce(
         (a, b) => a + (typeof b === 'number' ? b : 0),
         0,
       );
       if (sum !== 100) {
-        deductionPolicy = DEFAULT_DEDUCTION_POLICY;
+        deductionPolicy = fallbackPolicy;
       }
       createdByAi = true;
       aiProvider = 'local-openai-compatible';
-      aiModel = defaultModel;
+      aiModel = 'default';
     } catch (e) {
-      // AI failure: fall back to defaults rather than 500 — teacher can edit.
-      console.error('Rubric AI generation failed; using defaults:', e);
-      criteria = DEFAULT_CRITERIA_DESCRIPTION;
-      deductionPolicy = DEFAULT_DEDUCTION_POLICY;
-      createdByAi = true;
-      aiProvider = 'fallback-defaults';
-      aiModel = defaultModel;
+      if (request.signal.aborted) {
+        return NextResponse.json({ error: 'Rubric generation cancelled' }, { status: 499 });
+      }
+      // AI failure: fall back to HSK defaults rather than 500 — teacher can edit.
+      if (!isAiTimeoutError(e)) {
+        console.warn(`Rubric AI generation failed; using ${hskLevel} defaults: ${getAiErrorMessage(e)}`);
+      }
+      criteria = fallbackCriteria;
+      deductionPolicy = fallbackPolicy;
+      createdByAi = false;
+      aiProvider = undefined;
+      aiModel = undefined;
     }
   }
 
@@ -173,15 +180,21 @@ export async function POST(request: Request) {
     },
   });
 
-  // If attached to an assignment and that assignment has no rubric yet,
-  // wire it as the default.
+  // If attached to an assignment, wire it as the default when empty or when
+  // the caller explicitly requests replacing the active assignment rubric.
   if (body.assignmentId) {
     const assignment = await prisma.assignment.findUnique({ where: { id: body.assignmentId } });
-    if (assignment && !assignment.rubricId) {
+    if (assignment && (!assignment.rubricId || body.replaceAssignmentRubric)) {
       await prisma.assignment.update({
         where: { id: body.assignmentId },
         data: { rubricId: rubric.id },
       });
+      if (body.replaceAssignmentRubric && previousAssignmentRubricId && previousAssignmentRubricId !== rubric.id) {
+        await prisma.writingRubric.updateMany({
+          where: { id: previousAssignmentRubricId, ownerId: userId },
+          data: { status: 'archived' },
+        });
+      }
     }
   }
 

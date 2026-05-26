@@ -22,6 +22,7 @@ interface OllamaGenerateOptions {
   maxTokens?: number;
   jsonMode?: boolean;
   images?: string[]; // Base64 encoded data
+  timeoutMs?: number;
 }
 
 interface OllamaResponse {
@@ -69,8 +70,7 @@ export async function ollamaGenerate(options: OllamaGenerateOptions): Promise<st
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    // Allow up to 5 minutes for large models
-    signal: AbortSignal.timeout(300_000),
+    signal: AbortSignal.timeout(options.timeoutMs ?? 300_000),
   });
 
   if (!response.ok) {
@@ -101,7 +101,7 @@ export async function* ollamaStream(options: OllamaGenerateOptions): AsyncGenera
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(300_000),
+    signal: AbortSignal.timeout(options.timeoutMs ?? 300_000),
   });
 
   if (!response.ok) throw new Error(`Ollama stream error ${response.status}`);

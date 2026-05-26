@@ -6,20 +6,24 @@ import { v4 as uuidv4 } from 'uuid';
 export interface Block {
   id: string;
   type: string;
-  content: any;
+  content: Record<string, unknown>;
   order: number;
 }
 
 interface EditorContextType {
   blocks: Block[];
   setBlocks: (blocks: Block[]) => void;
-  addBlock: (type: string, content: any) => void;
-  updateBlock: (id: string, content: any) => void;
+  addBlock: (type: string, content: Record<string, unknown>) => void;
+  updateBlock: (id: string, content: Record<string, unknown>) => void;
   removeBlock: (id: string) => void;
   duplicateBlock: (id: string) => void;
   moveBlock: (id: string, direction: 'up' | 'down') => void;
   isPreview: boolean;
   setIsPreview: (isPreview: boolean) => void;
+  isExporting: boolean;
+  setIsExporting: (isExporting: boolean) => void;
+  lessonId?: string;
+  courseId?: string;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -27,28 +31,30 @@ const EditorContext = createContext<EditorContextType | undefined>(undefined);
 export function EditorProvider({ 
   children, 
   initialBlocks = [],
-  initialIsPreview = false
+  initialIsPreview = false,
+  lessonId,
+  courseId,
 }: { 
   children: React.ReactNode, 
   initialBlocks?: Block[],
-  initialIsPreview?: boolean
+  initialIsPreview?: boolean,
+  lessonId?: string,
+  courseId?: string,
 }) {
   const [blocks, setBlocks] = useState<Block[]>(
     initialBlocks.sort((a, b) => a.order - b.order)
   );
   const [isPreview, setIsPreview] = useState(initialIsPreview);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const addBlock = useCallback((type: string, content: any) => {
-    const newBlock: Block = {
-      id: uuidv4(),
-      type,
-      content,
-      order: blocks.length,
-    };
-    setBlocks((prev) => [...prev, newBlock]);
-  }, [blocks]);
+  const addBlock = useCallback((type: string, content: Record<string, unknown>) => {
+    setBlocks((prev) => {
+      const newBlock: Block = { id: uuidv4(), type, content, order: prev.length };
+      return [...prev, newBlock];
+    });
+  }, []);
 
-  const updateBlock = useCallback((id: string, content: any) => {
+  const updateBlock = useCallback((id: string, content: Record<string, unknown>) => {
     setBlocks((prev) => 
       prev.map((b) => (b.id === id ? { ...b, content: { ...b.content, ...content } } : b))
     );
@@ -90,7 +96,11 @@ export function EditorProvider({
       duplicateBlock,
       moveBlock,
       isPreview,
-      setIsPreview
+      setIsPreview,
+      isExporting,
+      setIsExporting,
+      lessonId,
+      courseId,
     }}>
       {children}
     </EditorContext.Provider>

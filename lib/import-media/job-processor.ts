@@ -199,7 +199,17 @@ export async function processImportJob(jobId: string): Promise<void> {
     console.log(`[job-processor] COMPLETED jobId=${jobId}`);
 
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    let msg = error instanceof Error ? error.message : String(error);
+    // Translate opaque network errors into actionable messages
+    if (
+      msg === 'fetch failed' ||
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('ENOTFOUND') ||
+      msg.includes('connect ETIMEDOUT')
+    ) {
+      const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+      msg = `AI 서버(Ollama)에 연결할 수 없습니다. Ollama가 실행 중인지 확인하세요: ${ollamaUrl}`;
+    }
     console.error(`[job-processor] FAILED jobId=${jobId}:`, msg);
     await fail(jobId, msg);
   } finally {

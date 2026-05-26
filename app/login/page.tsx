@@ -31,7 +31,7 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
       setLoading(false);
     }
@@ -128,7 +128,7 @@ export default function LoginPage() {
         </form>
 
         <div style={{ marginTop: '2rem', fontSize: '0.875rem', color: '#A0AEC0' }}>
-          Don't have an account? <Link href="/" style={{ color: 'var(--primary)', fontWeight: 700 }}>Start for free</Link>
+          Don&apos;t have an account? <Link href="/" style={{ color: 'var(--primary)', fontWeight: 700 }}>Start for free</Link>
         </div>
       </div>
     </div>

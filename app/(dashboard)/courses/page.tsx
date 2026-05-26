@@ -1,22 +1,26 @@
 import prisma from '@/lib/prisma';
 import MyCoursesClient from '@/components/dashboard/MyCoursesClient';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireUserOrRedirect } from '@/lib/auth-helpers';
 
 export default async function MyCoursesPage() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || !session.user) {
-    redirect('/login');
-  }
+  const userId = await requireUserOrRedirect();
 
-  // Single query with eager-loaded lessons (was N+1 — one extra query per course).
-  const courses = await prisma.course.findMany({
-    where: { userId: (session.user as any).id },
-    orderBy: { createdAt: 'desc' },
-    include: { lessons: { select: { id: true, status: true } } },
-  });
+  const [courses, templates] = await Promise.all([
+    prisma.course.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: { lessons: { select: { id: true, status: true } } },
+    }),
+    prisma.template.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true, title: true, description: true, type: true,
+        targetAudience: true, hskLevel: true, sourceType: true, updatedAt: true,
+        marketplaceEntries: { where: { isActive: true }, select: { id: true }, take: 1 },
+      },
+    }),
+  ]);
 
   const enhancedCourses = courses.map((course) => ({
     id: course.id,
@@ -30,5 +34,17 @@ export default async function MyCoursesPage() {
     publishedCount: course.lessons.filter((l) => l.status === 'published').length,
   }));
 
-  return <MyCoursesClient courses={enhancedCourses} />;
+  const serializedTemplates = templates.map((t) => ({
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    type: t.type,
+    targetAudience: t.targetAudience,
+    hskLevel: t.hskLevel,
+    sourceType: t.sourceType,
+    updatedAt: t.updatedAt.toISOString(),
+    isPublished: t.marketplaceEntries.length > 0,
+  }));
+
+  return <MyCoursesClient courses={enhancedCourses} initialTemplates={serializedTemplates} />;
 }

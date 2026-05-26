@@ -10,9 +10,8 @@ import fs from 'fs';
 
 const execAsync = promisify(exec);
 
-export function isYouTubeUrl(url: string): boolean {
-  return /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/)/.test(url);
-}
+import { isYouTubeUrl } from '@/lib/youtube-url';
+export { isYouTubeUrl };
 
 export function isVideoUrl(url: string): boolean {
   return isYouTubeUrl(url) || /(?:douyin\.com|bilibili\.com|tiktok\.com)/.test(url);
@@ -36,11 +35,6 @@ export async function downloadYouTubeAudio(url: string): Promise<string> {
   for (const cmd of commands) {
     try {
       await execAsync(cmd, { timeout: 120_000 });
-      // Find the output file
-      const files = fs.readdirSync(tmpDir).filter(f =>
-        f.startsWith(`keyi-audio-${Date.now().toString().substring(0, 8)}`) ||
-        f.includes('keyi-audio-')
-      );
       // Find the most recent mp3
       const mp3Files = fs.readdirSync(tmpDir)
         .filter(f => f.startsWith('keyi-audio-') && (f.endsWith('.mp3') || f.endsWith('.m4a') || f.endsWith('.webm')))

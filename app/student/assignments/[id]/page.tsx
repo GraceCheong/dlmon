@@ -10,7 +10,20 @@ export default async function StudentAssignmentPage({ params, searchParams }: { 
     include: {
       lesson: {
         include: { course: true }
-      }
+      },
+      attachments: {
+        include: {
+          uploadedFile: {
+            select: {
+              id: true,
+              originalName: true,
+              fileType: true,
+              fileSize: true,
+              conversionStatus: true,
+            },
+          },
+        },
+      },
     }
   });
 
@@ -21,18 +34,20 @@ export default async function StudentAssignmentPage({ params, searchParams }: { 
   let member = null;
   if (resolvedSearchParams.memberId) {
     member = await prisma.member.findUnique({
-      where: { id: resolvedSearchParams.memberId }
+      where: { id: resolvedSearchParams.memberId },
     });
-  }
-
-  // If no member ID is provided in URL, we mock a student for demo purposes
-  if (!member) {
-    const defaultMember = await prisma.member.findFirst();
-    member = defaultMember;
+    // Verify the member belongs to the same teacher as this assignment.
+    if (member && member.userId !== assignment.lesson.course.userId) {
+      member = null;
+    }
   }
 
   if (!member) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>학생 계정을 찾을 수 없습니다. 선생님이 학생 계정을 먼저 등록해야 합니다.</div>;
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        유효한 학생 링크가 필요합니다. 선생님이 제공한 링크를 사용하세요.
+      </div>
+    );
   }
 
   // Check if already submitted
@@ -45,10 +60,22 @@ export default async function StudentAssignmentPage({ params, searchParams }: { 
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <StudentAssignmentClient 
-        assignment={assignment} 
-        member={member} 
-        existingSubmission={existingSubmission} 
+      <StudentAssignmentClient
+        assignment={{
+          id: assignment.id,
+          type: assignment.type,
+          title: assignment.title,
+          prompt: assignment.prompt,
+          dueDate: assignment.dueDate?.toISOString(),
+          lesson: { title: assignment.lesson.title, course: { title: assignment.lesson.course.title } },
+          attachments: assignment.attachments.map(({ uploadedFile }) => uploadedFile),
+        }}
+        member={{ id: member.id, name: member.name }}
+        existingSubmission={existingSubmission ? {
+          contentText: existingSubmission.contentText ?? '',
+          aiScore: existingSubmission.aiScore ?? 0,
+          aiFeedback: existingSubmission.aiFeedback ?? '',
+        } : null}
       />
     </div>
   );

@@ -1,116 +1,155 @@
 # Project Summary: Letto Teacher Studio (KeYi Studio)
 
 **KeYi Studio (可意工作室)**
-**Status:** Phase 2 (Backend Consolidation & UI Wiring) In Progress
-**Last Updated:** May 1, 2026
+**Status:** MVP + Phase 3 feature set implemented
+**Last Updated:** 2026-05-26
 
 ---
 
-## 1. Executive Summary
+## Maintenance Rule
 
-Letto Teacher Studio is a specialized **Chinese Teaching Management System (CTMS)**. The platform supports end-to-end management of Chinese language courses, from AI-driven curriculum planning to automated student assignment grading.
+This file is the current-state project summary, not a chronological changelog.
 
-Phase 2 focused on cleaning up technical debt: removing a defunct second backend, consolidating an auth-bypass pattern duplicated across pages, replacing several mock UI flows with real persistence, and wiring up dead buttons.
+When future work changes the product, update only the essential result for the affected feature:
 
-## 2. Completed Milestones
-
-### Phase 1 — Core Features & AI Verification (previously completed)
-
-- Next.js 16 (App Router), Prisma + SQLite, NextAuth (Credentials provider).
-- Vercel AI SDK with local Ollama / LM Studio support.
-- AI Syllabus Generator (8-week HSK curriculum), Assignment dashboard, Pinyin/HSK linguistic tools, Magic Link student portal, instant AI grading.
-
-### Phase 2 — Backend Consolidation & UI Wiring (this commit, 2026-05-01)
-
-#### 2026-05-01 14:30 — chore: extract dlmon as standalone git repo
-- Initialized fresh `.git` repo at `I:\dev\dlmon` with current state as initial commit.
-- Created dated branch `2026-05-01` for ongoing Phase 2 work.
-
-#### 2026-05-01 14:45 — chore: delete dead `backend/` folder
-- The standalone `backend/` directory (Express + own Prisma + own SQLite) was unreachable from any UI code (0 imports across the project), had no run script, and shipped a Postgres schema incompatible with the live SQLite schema.
-- Its only feature (`AIEvaluator` class shelling out to Ollama CLI) was already replaced by `app/api/ai/grade/route.ts` using the Vercel AI SDK as documented in Phase 1.
-- Verdict: dead code from an earlier prototype — removed.
-
-#### 2026-05-01 15:00 — refactor(auth): consolidate session-or-test-user bypass into a single helper
-- New `lib/auth-helpers.ts` exposes `getCurrentUserId()`, `requireUserOrRedirect()`, and `requireUserOrUnauthorized()`.
-- Replaced the duplicated 10-line "if no session, fall back to `test@example.com` or `findFirst`" snippet in 4 files: `app/api/assignments/route.ts`, `app/(dashboard)/assignments/page.tsx`, `app/(dashboard)/assignments/[id]/page.tsx`, `app/(dashboard)/assignments/new/page.tsx`.
-- Bypass behavior is preserved (test-user fallback) but is now in one place. Flipping to strict auth is now a one-line change.
-- ⚠️ Known security debt: `lib/auth.ts` still does plaintext password comparison and contains a `test@example.com` no-password backdoor. Tier-1 fix deferred at user request.
-
-#### 2026-05-01 15:10 — perf(dashboard): fix N+1 query
-- `app/(dashboard)/dashboard/page.tsx` previously called `prisma.lesson.findMany` once per course in a loop. Replaced with a single `findMany` using `include: { lessons: true }`.
-- Same fix applied to `app/(dashboard)/courses/page.tsx`.
-- Replaced `studentViews: 128 // Mock for now` with a real `prisma.submission.count` aggregated for the teacher's members.
-
-#### 2026-05-01 15:25 — feat(members): replace hardcoded mock list with real CRUD
-- `app/(dashboard)/members/page.tsx` was a 4-row hardcoded array with no DB connection and no working buttons.
-- Now: server component that loads `prisma.member.findMany({ where: { userId } })` and hands data to a new `components/dashboard/MembersClient.tsx`.
-- New client component implements: search filter (was decorative), invite-member modal posting to `POST /api/members`, per-row delete with confirmation calling `DELETE /api/members/:id`.
-- New routes: `app/api/members/route.ts` (GET, POST) and `app/api/members/[id]/route.ts` (PATCH, DELETE). Includes ownership checks and a guard that prevents deleting members with existing submissions.
-
-#### 2026-05-01 15:45 — feat(settings): wire Settings page to real persistence
-- Added `displayName`, `language` (default "ko"), and `aiMode` (default true) fields to `User` model. **Requires `npx prisma migrate dev --name add_user_settings`.**
-- New `app/api/settings/route.ts` exposes GET (current user's settings) and PATCH (update displayName, email, language, aiMode).
-- Rewrote `app/(dashboard)/settings/page.tsx`: loads current settings on mount via `useEffect`, all fields are controlled inputs (no more `defaultValue` ghosts), Save button now actually persists. Replaces the old fake `setTimeout(800ms) + alert` handler.
-- Language preference now syncs back into the in-memory `LanguageContext` after save.
-
-#### 2026-05-01 16:05 — feat(curriculum): wire Edit Week / Add Week / Delete Week
-- `components/dashboard/CurriculumEditor.tsx` previously had three buttons with no `onClick`: per-week edit pencil, "Edit" inside expanded week, and the "Add Week" button at bottom.
-- Added an Edit Week modal with inputs for topic / objectives / activities / assessment, plus Add Week and Delete Week actions.
-- New `app/api/curriculum/[courseId]/route.ts` PATCH handler upserts the JSON-blob plan in `CurriculumPlan.data` and keeps `Course.weeks` in sync.
-
-#### 2026-05-01 16:20 — feat(syllabus): make Save actually save + inline edit mode
-- `components/dashboard/SyllabusActions.tsx` Save button previously sets a fake "saved!" status and doesn't write anything.
-- Refactored: SyllabusActions now owns the rendered syllabus body and a toolbar with Print, PDF Export, Edit, Save, Cancel. Edit mode swaps the rendered markdown for a textarea; Save sends content to `PATCH /api/syllabus/:courseId` (new route).
-- Updated `app/(dashboard)/courses/[id]/syllabus/page.tsx` to pass `courseId` and `initialContent` to the client component.
-- The list view (`SyllabiClient.tsx`) Download and Print row buttons now open the syllabus page so the user can use the working PDF/print functionality, instead of being dead.
-
-#### 2026-05-01 16:30 — feat(search): wire decorative search inputs
-- `components/dashboard/MyCoursesClient.tsx` and `components/dashboard/SyllabiClient.tsx` had search inputs with no `onChange` and no state. Added client-side filtering on title.
-
-#### 2026-05-01 16:40 — chore: misc cleanups
-- `lib/auth.ts`: `debug: true` → `debug: false`. Auth provider was logging every email + auth result on every request.
-- Root `.gitignore`: added `*.db`, `*.db-journal`, and `build_output*.txt`. The committed `dev.db` was 46 MB and growing.
-
-#### 2026-05-01 16:50 — fix(syllabi): clean up wasted requests in download handler
-- Self-review caught a buggy `handleDownload` in `components/dashboard/SyllabiClient.tsx`: it issued a GET against the syllabus PATCH-only API route (would 405) and a HEAD request against the page that did nothing useful. Replaced with a direct `window.open` to the syllabus detail page where the working PDF export lives.
+- Add newly completed capabilities that matter to future work.
+- Modify stale behavior, architecture, command, or risk notes.
+- Delete obsolete implementation notes and resolved debt.
+- Keep detailed timelines, commit-style logs, and file-by-file implementation history out of this file.
 
 ---
 
-## 3. Action Required Before Phase 3 Can Build
+## Product Snapshot
 
-The following commands must be run **on your machine** before `npm run dev` will succeed:
+Letto Teacher Studio is a Chinese Teaching Management System for teachers. It supports course planning, lesson material creation, Chinese-specific AI tools, teacher-managed students, assignment workflows, and writing evaluation.
+
+Core stack:
+
+- Next.js 16 App Router, React 19, Tailwind CSS 4.
+- Prisma + SQLite for local data.
+- NextAuth Credentials provider.
+- Vercel AI SDK with an OpenAI-compatible local LLM endpoint.
+- Local AI defaults live in `lib/ai/client.ts`; `LOCAL_LLM_MODEL` and `LOCAL_LLM_URL` remain the provider/model override points.
+
+MVP scope:
+
+- Teachers log in and manage students as `Member` records.
+- Students do not have login accounts in the MVP.
+- The existing link-based student assignment portal remains for compatibility, but teacher-side workflows are primary.
+
+---
+
+## Major Implemented Capabilities
+
+### Course, Curriculum, and Syllabus
+
+- Course dashboard, course list, curriculum planning, and syllabus pages use real persistence instead of mock-only UI.
+- Curriculum weeks can be added, edited, and deleted through the UI.
+- Syllabi can be edited, saved, printed, and exported to PDF.
+- Dashboard and course queries were consolidated to avoid avoidable N+1 reads.
+
+### Lesson Editor
+
+- Lesson blocks are saved through `PATCH /api/lessons/[lessonId]/blocks` with ownership checks and ordered block persistence.
+- Active block types are `heading`, `text`, `image`, `video`, `quiz`, `youtube-link`, `file-attachment`, `text-analyzer`, and `youtube-extract`.
+- `media-import` remains as a backwards-compatible alias for old saved lesson blocks.
+- PDF export swaps playable YouTube iframes to static thumbnail/title/link fallbacks before capture.
+
+### Members and Assignments
+
+- `Member` is the student record model; email is optional, `className`, `metadata`, and `deletedAt` support MVP student management.
+- Member deletion is soft-delete and is blocked when active submissions exist.
+- Assignment creation and detail views enforce teacher ownership.
+- Assignment detail includes editing fields, HSK/audience settings, example prompts, and AI-assisted assignment prompt generation.
+- Teacher assignment detail shows per-member student links with copy/open actions.
+- Assignment attachments work in both `/courses/[id]/plan` and `/assignments/new`, and the student portal can preview/download attached files through member-bound public routes.
+- The legacy student submission route blocks duplicate `assignmentId + memberId` submissions and surfaces the existing submission state.
+
+### Writing Evaluation
+
+- Rubric-based writing evaluation is implemented with `WritingRubric` and append-only `WritingEvaluation` records.
+- Evaluations store rubric snapshots; re-evaluation creates a new row and links to the previous evaluation.
+- Teacher-side assignment detail supports entering writing, generating/reusing rubrics, evaluating, adding comments, and re-evaluating.
+- Deprecated `Submission.aiScore` / `Submission.aiFeedback` and `/api/ai/grade` remain only for backwards compatibility.
+
+### AI Tools
+
+- Chinese vocabulary/sentence generation is available as a standalone tool and inside the editor HSK analysis block.
+- Generated Chinese items can be saved to history and reloaded.
+- Standalone and editor Chinese generation share the same audience selector values.
+- Standalone lesson plan generation supports saved prompts, prompt search/duplicate, generated plans, and structured saved-plan editing.
+- AI routes use shared timeout/error handling and `cleanAiJsonResponse()` for model outputs that include thinking blocks or markdown fences.
+
+### YouTube Import and YouTube Link Blocks
+
+- `youtube-extract` performs asynchronous YouTube media import with metadata, captions-first transcript retrieval, audio/STT fallback, AI material generation, job polling, nested result editing, and save-to-record support.
+- YouTube import save targets are intentionally limited to `lesson_material` until another UI entry point exists.
+- `youtube-link` is separate and display-only: it stores a YouTube URL, video ID, title, thumbnail, and original link for browser rendering and PDF fallback.
+- Simple YouTube link blocks do not add QR codes, transcript generation, audio download, or AI summaries.
+
+### Files and Attachments
+
+- PDF/HWP/HWPX upload is implemented with a 100 MB limit, conversion status tracking, and LibreOffice-based HWP/HWPX to PDF conversion where available.
+- File APIs support upload, list, metadata, preview, download, retry conversion, rename/description update, and delete.
+- File library UI supports search, type/status filtering, and inline rename/description editing.
+- Internal disk paths such as `storagePath` and `convertedPath` must not be returned by APIs.
+- Lesson editor file attachment blocks can choose existing files or upload new ones.
+
+### Templates, Marketplace, and Textbook Shell
+
+- Private templates and free marketplace sharing are implemented.
+- Template editing uses structured metadata/section/activity/resource fields instead of raw JSON editing.
+- Publishing creates an immutable marketplace snapshot; copying creates an independent private template and increments copy count.
+- Template and marketplace lists support search/filter flows, including marketplace type filtering.
+- Marketplace is free sharing only; no payment, purchase, revenue, or settlement logic exists.
+- Textbook template UI is a shell only. Real textbook database integration and AI generation are intentionally disabled until that data model is decided.
+
+### Internationalization
+
+- Korean/English language state is handled by `context/LanguageContext.tsx`.
+- New or edited UI should use `useLanguage()` and `lib/translations.ts`.
+- Some older feature UIs still contain Korean literals; treat i18n cleanup as targeted follow-up work when touching those areas.
+
+---
+
+## Current Architecture Rules
+
+- API route handlers should use `requireUserOrUnauthorized()` and filter database operations by the returned teacher `userId`.
+- Server-component pages should use `requireUserOrRedirect()`.
+- Development auth fallback is explicit only through `TEST_USER_ID`; do not reintroduce implicit first-user or unauthenticated fallbacks.
+- `lib/auth.ts` uses scrypt-hashed passwords and upgrades legacy plaintext passwords after successful login.
+- Any route using Node APIs such as `fs`, `path`, `os`, or `child_process` must use Node runtime.
+- JSON stored in SQLite text fields must be stringified on write and parsed on read.
+- Uploaded files are viewer resources, not AI input. Do not add OCR or AI ingestion of uploaded files unless the product scope changes.
+- YouTube audio storage paths and uploaded-file disk paths are internal-only fields.
+
+---
+
+## Run and Verify
+
+Common commands:
 
 ```powershell
-# 1. Remove the deleted backend folder
-Remove-Item -Recurse -Force I:\dev\dlmon\backend
-
-# 2. Apply the new User schema fields
-cd I:\dev\dlmon
-npx prisma migrate dev --name add_user_settings
-
-# 3. (Optional) untrack the now-ignored dev.db from git
-git rm --cached dev.db
-git commit -m "chore: stop tracking dev.db"
+npm run dev
+npm run build
+npm run lint
+npx prisma validate
+npx prisma db push
 ```
 
----
+Local login:
 
-## 4. Open Items / Known Debt
+- Seeded account: `test@example.com` / `password`.
+- Any-password test-user bypass requires `ALLOW_DEV_ANY_PASSWORD_FOR_TEST_USER=true` in development.
 
-- **Auth security (deferred per user direction)**: `lib/auth.ts` still uses plaintext password comparison and has a `test@example.com` no-password backdoor; first-time login auto-creates the user. Tier-1 hardening (bcrypt + remove backdoor + remove auto-create) is the single biggest outstanding risk.
-- **Bypass fallback in `lib/auth-helpers.ts`**: `getCurrentUserId()` still falls back to the seeded test user when no session is found, to avoid breaking dev workflows. To enable strict auth, remove the fallback branch in that file.
-- **Other API routes** (`app/api/courses/generate/route.ts`, `app/api/courses/from-template/route.ts`) still call `getServerSession` directly — they were not part of this milestone. Could be migrated to `requireUserOrUnauthorized()` for consistency.
-
----
-
-## 5. How to Run & Verify
-
-1. Run the three commands in §3.
-2. `npm run dev`
-3. Visit [http://localhost:3000/login](http://localhost:3000/login).
-4. Test account: `test@example.com` / any password (the dev backdoor is still in place; see §4).
+Before finishing meaningful code changes, run the narrowest relevant checks and `npm run build` when route, schema, or TypeScript behavior changed.
 
 ---
 
-**This document serves as the official record of development progress for KeYi Studio.**
+## Active Open Items
+
+- Textbook templates need real textbook/unit persistence before AI generation can be enabled.
+- Student accounts, student dashboard, and student history remain outside MVP scope.
+- Some old lesson rows may still use `media-import`; keep the alias until a one-time data migration is done.
+- Some feature UI strings still need targeted i18n cleanup.
+- Local AI model choice and timeout values should remain configurable per environment.

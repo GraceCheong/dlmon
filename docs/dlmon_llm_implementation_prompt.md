@@ -53,12 +53,14 @@ The implementation goal is to align the existing repository with the clarified M
 
 ---
 
-## 1. AI Model Change
+## 1. AI Model Configuration
 
-Update the default local LLM model to:
+Preserve the current local LLM configuration unless a task explicitly requests a model change.
+
+Current default:
 
 ```text
-qwen3:30b
+deepseek-r1:8b
 ```
 
 Likely file:
@@ -70,7 +72,7 @@ lib/ai/client.ts
 Expected behavior:
 
 ```ts
-export const defaultModel = process.env.LOCAL_LLM_MODEL || 'qwen3:30b';
+export const defaultModel = process.env.LOCAL_LLM_MODEL || 'deepseek-r1:8b';
 ```
 
 Requirements:
@@ -79,6 +81,7 @@ Requirements:
 - Keep `LOCAL_LLM_MODEL` override support.
 - Do not hard-code provider logic into feature routes.
 - Keep the local OpenAI-compatible endpoint behavior.
+- Use the shared AI response cleanup helper for JSON-generating routes instead of duplicating model-specific cleanup.
 
 ---
 
@@ -693,36 +696,33 @@ PDF/HWP/HWPX upload
 HWP/HWPX server-side PDF conversion
 ```
 
-But do **not** over-expand this task unless explicitly requested.
+This has been implemented as viewer-resource functionality.
 
-This prompt’s immediate implementation scope is:
+Current product boundary:
 
 ```text
-Qwen3:30b model change
-Member extension
-Writing evaluation architecture
-YouTube/media clarification
-Chinese-specific block cleanup
-Temporary save bug
-Simple YouTube link block for lesson material PDF rendering
+PDF/HWP/HWPX upload and PDF conversion are allowed.
+Uploaded files are viewer resources.
+Uploaded files are not AI input.
+Do not add OCR or AI ingestion of uploaded files unless explicitly requested.
 ```
 
-Leave FileResource and HWP conversion for a separate implementation phase unless current edited code already depends on it.
+When touching file features, update only the essential current behavior and security constraints.
 
 ---
 
 ## 10. Auth Note
 
-Existing auth has development security debt:
+Current auth posture:
 
 ```text
-plaintext password comparison
-auto-create user
-test@example.com bypass
-getCurrentUserId fallback to test/first user
+scrypt password hashes
+legacy plaintext upgrade after successful login
+explicit TEST_USER_ID development fallback only
+optional ALLOW_DEV_ANY_PASSWORD_FOR_TEST_USER=true for seeded test-user QA
 ```
 
-Do not break the dev workflow unless explicitly instructed.
+Do not weaken the current auth behavior unless explicitly instructed.
 
 However, when creating new APIs:
 
@@ -730,7 +730,7 @@ However, when creating new APIs:
 Use the existing auth helper consistently.
 Keep ownership checks.
 Do not create new unauthenticated routes.
-Add TODO comments where strict auth hardening is needed.
+Do not reintroduce implicit first-user, test-user, or unauthenticated fallbacks.
 ```
 
 Ownership checks must use:
@@ -747,7 +747,7 @@ relations through User → Course / Member / Assignment / Submission / Rubric
 Implement in this order:
 
 ```text
-1. Change default local LLM model to qwen3:30b.
+1. Verify the AI client preserves the current default model and environment overrides; change the model only if explicitly requested.
 2. Add Node runtime declaration to media import route if it uses Node APIs.
 3. Rename/consolidate Chinese-specific media features:
    - remove 성조 연습
@@ -773,7 +773,7 @@ Implement in this order:
 ### AI Model
 
 ```text
-Default local model is qwen3:30b.
+Default local model remains whatever is configured in `lib/ai/client.ts`.
 LOCAL_LLM_MODEL override still works.
 ```
 
@@ -854,8 +854,7 @@ Do not implement these in this task:
 Student login expansion
 Student dashboard expansion
 Student-side assignment as MVP flow
-PDF/HWP/HWPX upload
-HWP/HWPX conversion
+AI ingestion of uploaded files
 OCR
 YouTube QR code
 YouTube transcript for the simple link block
@@ -880,3 +879,20 @@ YouTube feature separation
 ```
 
 Prioritize correctness, ownership checks, and build stability.
+
+---
+
+## 15. Documentation Update Rule
+
+When this prompt is used for future work, update `PROJECT_SUMMARY.md` only as a current-state summary.
+
+For each feature touched:
+
+```text
+Add only newly completed essential outcomes.
+Modify stale behavior, architecture, commands, or risk notes.
+Delete obsolete or resolved notes.
+Do not append full dated timelines, commit-message logs, or file-by-file implementation history.
+```
+
+Detailed implementation history belongs in commits, PR notes, or targeted review documents, not in the project summary.
