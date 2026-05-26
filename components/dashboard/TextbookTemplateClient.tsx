@@ -2,12 +2,9 @@
 
 import { useState } from 'react';
 import {
-  BookOpen,
   Loader2,
   Sparkles,
   Save,
-  ChevronDown,
-  ChevronUp,
   ArrowDown,
   ArrowUp,
   Plus,

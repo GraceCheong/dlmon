@@ -375,7 +375,6 @@ export default function CurriculumEditor({
       {weeks.map((week, index) => {
         const isExam = week.type === 'midterm' || week.type === 'final';
         const isMidterm = week.type === 'midterm';
-        const isFinal = week.type === 'final';
         return (
         <div
           key={`${week.week}-${index}`}
@@ -968,6 +967,7 @@ function PlanEditModal({
   const handleSave = async () => {
     let sessionNum = 0;
     const renumbered: Week[] = items.map((item) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _uid, ...rest } = item;
       sessionNum++;
       return { ...rest, week: sessionNum };

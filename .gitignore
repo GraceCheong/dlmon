@@ -49,5 +49,8 @@ next-env.d.ts
 # user-uploaded files
 /uploads/
 
+# temporary import/STT processing files
+/tmp/
+
 # build output captures
 build_output*.txt

@@ -1,4 +1,4 @@
-import { ollamaGenerate, parseOllamaJSON, MODELS } from '@/lib/ollama';
+import { ollamaGenerate, parseOllamaJSON } from '@/lib/ollama';
 import { defaultModel } from '@/lib/ai/client';
 import type { ImportedYouTubeAIResult, OutputOptions, TargetAudience, HskLevel } from './types';
 

@@ -55,8 +55,6 @@ Active block types: `heading`, `text`, `image`, `video`, `quiz`, `youtube-link`,
 
 `media-import` remains as a backwards-compatible alias for old saved lesson blocks. Keep it until old rows are migrated.
 
-Four removed block files (`TonePracticeBlock`, `CharacterAnalysisBlock`, `SubtitleAnalysisBlock`, `CultureComparisonBlock`) still exist on disk — do not re-register them in BlockRegistry.
-
 Lesson saves go to `PATCH /api/lessons/[lessonId]/blocks` (current). The old `POST /api/lessons/[lessonId]/save` is deprecated.
 
 ### YouTube media import pipeline

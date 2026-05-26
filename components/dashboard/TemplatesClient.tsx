@@ -5,7 +5,6 @@ import {
   ArrowDown,
   ArrowUp,
   BookCopy,
-  ChevronDown,
   ChevronRight,
   Globe,
   GlobeOff,

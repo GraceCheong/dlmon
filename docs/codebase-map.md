@@ -118,11 +118,7 @@
 |---|---|
 | `app/api/lessons/[lessonId]/save/route.ts` | Legacy save endpoint. Use blocks route. |
 | `app/api/ai/grade/route.ts` | Legacy student portal grading. Do not extend for teacher flow. |
-| `components/editor/blocks/TonePracticeBlock.tsx` | Removed block type. |
-| `components/editor/blocks/CharacterAnalysisBlock.tsx` | Removed block type. |
-| `components/editor/blocks/SubtitleAnalysisBlock.tsx` | Removed block type, merged into YouTube extraction. |
-| `components/editor/blocks/CultureComparisonBlock.tsx` | Removed block type. |
 | `Submission.aiScore` / `Submission.aiFeedback` | Legacy display fields. |
 | `docker-compose.yml` | Legacy Postgres setup, current app uses SQLite. |
-| `scratch/` | Script-only workspace. |
+| `scratch/` | Script-only workspace (seed scripts only). |
 | `i18n/` | Empty placeholder. |
