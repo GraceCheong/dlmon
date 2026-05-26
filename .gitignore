@@ -54,3 +54,8 @@ next-env.d.ts
 
 # build output captures
 build_output*.txt
+
+# local IDE / tool settings
+.vscode/
+.claude/
+.playwright-mcp/
